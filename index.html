@@ -158,6 +158,45 @@
       </div>
     </div>
 
+    <!-- ═══════════════ أدوات المسؤول ═══════════════ -->
+    <div class="admin-tools-section" id="admin-tools-section">
+      <div class="section-header admin-header">
+        <i class="fas fa-cogs"></i>
+        <h2>أدوات المسؤول</h2>
+      </div>
+      <div class="admin-tools-body">
+        <div class="admin-tool-card">
+          <div class="admin-tool-icon"><i class="fas fa-flask"></i></div>
+          <div class="admin-tool-info">
+            <h4>إنشاء بيانات تجريبية (سنة)</h4>
+            <p>إنشاء بيانات حضور وتقييم عشوائية لمدة سنة كاملة (الأحد والخميس فقط) لجميع الطلاب</p>
+          </div>
+          <button class="btn-admin btn-admin-generate" id="btn-generate-mock">
+            <i class="fas fa-magic"></i> إنشاء
+          </button>
+        </div>
+        <div class="admin-tool-card">
+          <div class="admin-tool-icon admin-tool-icon-danger"><i class="fas fa-eraser"></i></div>
+          <div class="admin-tool-info">
+            <h4>حذف البيانات التجريبية</h4>
+            <p>حذف البيانات التجريبية فقط مع الحفاظ على جميع البيانات الحقيقية</p>
+          </div>
+          <button class="btn-admin btn-admin-delete" id="btn-delete-mock">
+            <i class="fas fa-trash"></i> حذف التجريبية
+          </button>
+        </div>
+        <div class="admin-tool-card" id="mock-status-card" style="display:none;">
+          <div class="admin-tool-icon" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8);">
+            <i class="fas fa-info-circle"></i>
+          </div>
+          <div class="admin-tool-info">
+            <h4>حالة البيانات التجريبية</h4>
+            <p id="mock-status-text">لا توجد بيانات تجريبية</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- ═══════════════ قسم التقارير الأسبوعية ═══════════════ -->
     <div class="weekly-section" id="weekly-report">
       <div class="section-header">
@@ -322,6 +361,25 @@
                </div>
             </div>
          </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ Modal: تأكيد مخصص ═══════════════ -->
+  <div class="modal-overlay" id="modal-custom-confirm">
+    <div class="modal-content" style="max-width: 440px;">
+      <div class="modal-title" style="color: var(--color-danger);">
+        <i class="fas fa-exclamation-triangle" style="color: var(--color-danger);"></i>
+        <span id="confirm-title">تأكيد العملية</span>
+      </div>
+      <p id="confirm-message" style="font-size: 15px; line-height: 1.8; margin-bottom: 20px; color: var(--color-text-light);"></p>
+      <div class="modal-actions" style="justify-content: flex-end;">
+        <button class="btn-primary" id="btn-confirm-yes" style="background: linear-gradient(135deg, #f87171, #dc2626);">
+          <i class="fas fa-check"></i> نعم، تأكيد
+        </button>
+        <button class="btn-secondary" id="btn-confirm-no">
+          <i class="fas fa-times"></i> إلغاء
+        </button>
       </div>
     </div>
   </div>

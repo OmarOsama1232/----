@@ -243,11 +243,19 @@ function printStudentProfile() {
 /**
  * حذف الطالب من داخل الملف الشخصي
  */
-function deleteStudentFromProfile() {
+async function deleteStudentFromProfile() {
   if (!currentProfileStudentId) return;
   const student = getStudentById(currentProfileStudentId);
-  
-  if (confirm(`هل أنت متأكد من حذف الطالب "${student.name}" بجميع بياناته؟ لا يمكن التراجع عن هذا الإجراء.`)) {
+  if (!student) return;
+
+  const recordsCount = getRecordsForStudent(currentProfileStudentId).length;
+
+  const confirmed = await showConfirm(
+    `هل أنت متأكد من حذف الطالب "${student.name}" بجميع بياناته (${recordsCount} سجل)؟\nلا يمكن التراجع عن هذا الإجراء.`,
+    'تأكيد حذف الطالب'
+  );
+
+  if (confirmed) {
     deleteStudent(currentProfileStudentId);
     closeModal('modal-student-profile');
     renderStudentsTable();

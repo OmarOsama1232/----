@@ -95,12 +95,41 @@ function closeModalOnBackdrop(e, modalId) {
 // ═══════════════════════════════════
 
 /**
- * عرض رسالة تأكيد مخصصة (تستخدم confirm المتصفح)
+ * عرض رسالة تأكيد مخصصة (modal مخصص بدلاً من confirm المتصفح)
  * @param {string} message - نص رسالة التأكيد
- * @returns {boolean} true إذا وافق المستخدم
+ * @param {string} title - عنوان التأكيد (اختياري)
+ * @returns {Promise<boolean>} true إذا وافق المستخدم
  */
-function showConfirm(message) {
-  return confirm(message);
+function showConfirm(message, title = 'تأكيد العملية') {
+  return new Promise((resolve) => {
+    const modal = document.getElementById('modal-custom-confirm');
+    const titleEl = document.getElementById('confirm-title');
+    const msgEl = document.getElementById('confirm-message');
+    const yesBtn = document.getElementById('btn-confirm-yes');
+    const noBtn = document.getElementById('btn-confirm-no');
+
+    if (!modal) {
+      // fallback لو الـ modal غير موجود
+      resolve(confirm(message));
+      return;
+    }
+
+    titleEl.textContent = title;
+    msgEl.textContent = message;
+    openModal('modal-custom-confirm');
+
+    function cleanup() {
+      yesBtn.removeEventListener('click', onYes);
+      noBtn.removeEventListener('click', onNo);
+      closeModal('modal-custom-confirm');
+    }
+
+    function onYes() { cleanup(); resolve(true); }
+    function onNo() { cleanup(); resolve(false); }
+
+    yesBtn.addEventListener('click', onYes);
+    noBtn.addEventListener('click', onNo);
+  });
 }
 
 // ═══════════════════════════════════

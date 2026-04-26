@@ -990,3 +990,103 @@ input, select, button, textarea { font-family: 'Cairo', sans-serif; }
 ::-webkit-scrollbar-track { background: var(--color-bg); border-radius: 4px; }
 ::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--color-primary-light); }
+
+/* ── أدوات المسؤول ── */
+.admin-tools-section {
+  margin-top: 36px;
+  margin-bottom: 28px;
+  background: var(--color-white);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--color-border);
+  overflow: hidden;
+}
+.admin-header {
+  background: linear-gradient(135deg, #374151, #1f2937);
+}
+.admin-header h2 { color: #fff; }
+.admin-header i { color: #fbbf24; }
+
+.admin-tools-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.admin-tool-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+  transition: all var(--transition);
+}
+.admin-tool-card:hover {
+  box-shadow: var(--shadow-sm);
+  border-color: var(--color-primary-light);
+}
+
+.admin-tool-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+.admin-tool-icon-danger {
+  background: linear-gradient(135deg, #f87171, #dc2626);
+}
+
+.admin-tool-info {
+  flex: 1;
+}
+.admin-tool-info h4 {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: 4px;
+}
+.admin-tool-info p {
+  font-size: 13px;
+  color: var(--color-gray);
+  line-height: 1.5;
+}
+
+.btn-admin {
+  border: none;
+  padding: 10px 22px;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all var(--transition);
+  color: #fff;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.btn-admin-generate {
+  background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+}
+.btn-admin-generate:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(109, 40, 217, 0.35);
+}
+.btn-admin-delete {
+  background: linear-gradient(135deg, #f87171, #dc2626);
+}
+.btn-admin-delete:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(220, 38, 38, 0.35);
+}
+

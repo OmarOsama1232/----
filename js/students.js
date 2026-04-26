@@ -125,23 +125,26 @@ function saveEditStudent() {
 // ═══════════════════════════════════
 
 /**
- * حذف طالب مع تأكيد
+ * حذف طالب مع تأكيد مخصص (حذف آمن شامل)
  * @param {string} studentId - معرف الطالب
  */
-function confirmDeleteStudent(studentId) {
+async function confirmDeleteStudent(studentId) {
   const student = getStudentById(studentId);
   if (!student) return;
-  
-  const confirmed = showConfirm(
-    `هل أنت متأكد من حذف الطالب "${student.name}"؟\nسيتم حذف جميع سجلاته أيضاً!`
+
+  const recordsCount = getRecordsForStudent(studentId).length;
+
+  const confirmed = await showConfirm(
+    `هل أنت متأكد من حذف الطالب "${student.name}"؟\nسيتم حذف جميع سجلاته (${recordsCount} سجل) نهائياً!\nلا يمكن التراجع عن هذا الإجراء.`,
+    'تأكيد حذف الطالب'
   );
-  
+
   if (confirmed) {
     deleteStudent(studentId);
     renderStudentsTable();
     updateDashboardCards();
     renderWeeklyReport();
-    showToast(`تم حذف الطالب "${student.name}" وجميع سجلاته`);
+    showToast(`تم حذف الطالب "${student.name}" وجميع سجلاته (${recordsCount} سجل)`);
   }
 }
 
