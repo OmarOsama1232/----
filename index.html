@@ -2,9 +2,21 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
   <title>حلقتنا - إدارة حلقات تحفيظ القرآن الكريم</title>
   <meta name="description" content="تطبيق متكامل لإدارة حلقات تحفيظ القرآن الكريم - متابعة الطلاب والحضور والتقييمات">
+
+  <!-- Android / PWA Meta Tags -->
+  <meta name="theme-color" content="#1f5e3a">
+  <meta name="color-scheme" content="light">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+  <!-- PWA Manifest & Icons -->
+  <link rel="manifest" href="manifest.json">
+  <link rel="shortcut icon" href="icon-512.png">
+  <link rel="apple-touch-icon" href="icon-512.png">
 
   <!-- Google Fonts - Cairo -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -27,6 +39,12 @@
   <link rel="stylesheet" href="css/responsive.css">
 </head>
 <body>
+
+  <!-- ═══════════════ بانر عدم الاتصال ═══════════════ -->
+  <div class="offline-banner" id="offline-banner" style="display:none;">
+    <i class="fas fa-wifi-slash"></i>
+    <span>أنت تعمل بدون اتصال — البيانات المحلية متاحة</span>
+  </div>
 
   <!-- ═══════════════ الشريط العلوي ═══════════════ -->
   <header class="header" id="header">
@@ -57,11 +75,11 @@
     </div>
   </header>
 
-  <main class="container">
+  <main class="container" id="main-content">
 
     <!-- ═══════════════ بطاقات الإحصائيات ═══════════════ -->
-    <div class="dashboard-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-      <h2 style="font-size: 20px; color: var(--color-primary);"><i class="fas fa-chart-pie"></i> نظرة عامة</h2>
+    <div class="dashboard-header">
+      <h2><i class="fas fa-chart-pie"></i> نظرة عامة</h2>
       <select id="dashboard-period-select" class="filter-select">
         <option value="week" selected>هذا الأسبوع</option>
         <option value="month">هذا الشهر</option>
@@ -108,9 +126,7 @@
         <i class="fas fa-award"></i>
         <h2>لوحة الشرف لهذا الأسبوع</h2>
       </div>
-      <div class="honor-cards" id="honor-cards-container">
-        <!-- يتم توليد البطاقات ديناميكياً -->
-      </div>
+      <div class="honor-cards" id="honor-cards-container"></div>
     </div>
 
     <!-- ═══════════════ شريط التحكم ═══════════════ -->
@@ -169,7 +185,7 @@
           <div class="admin-tool-icon"><i class="fas fa-flask"></i></div>
           <div class="admin-tool-info">
             <h4>إنشاء بيانات تجريبية (سنة)</h4>
-            <p>إنشاء بيانات حضور وتقييم عشوائية لمدة سنة كاملة (الأحد والخميس فقط) لجميع الطلاب</p>
+            <p>إنشاء بيانات حضور وتقييم عشوائية لمدة سنة كاملة (الأحد والخميس فقط)</p>
           </div>
           <button class="btn-admin btn-admin-generate" id="btn-generate-mock">
             <i class="fas fa-magic"></i> إنشاء
@@ -179,7 +195,7 @@
           <div class="admin-tool-icon admin-tool-icon-danger"><i class="fas fa-eraser"></i></div>
           <div class="admin-tool-info">
             <h4>حذف البيانات التجريبية</h4>
-            <p>حذف البيانات التجريبية فقط مع الحفاظ على جميع البيانات الحقيقية</p>
+            <p>حذف البيانات التجريبية فقط مع الحفاظ على البيانات الحقيقية</p>
           </div>
           <button class="btn-admin btn-admin-delete" id="btn-delete-mock">
             <i class="fas fa-trash"></i> حذف التجريبية
@@ -299,7 +315,6 @@
       </div>
       
       <div class="profile-layout">
-         <!-- العمود الجانبي -->
          <div class="profile-sidebar">
             <div class="profile-card">
                <h3 class="profile-card-title"><i class="fas fa-book-open"></i> الحفظ والمراجعة</h3>
@@ -315,9 +330,7 @@
             </div>
          </div>
          
-         <!-- المحتوى الرئيسي -->
          <div class="profile-main">
-            <!-- أزرار الفلترة -->
             <div class="profile-filters">
                <button class="filter-period-btn active" data-period="week" onclick="updateProfileView('week')">أسبوعياً</button>
                <button class="filter-period-btn" data-period="month" onclick="updateProfileView('month')">شهرياً</button>
@@ -325,7 +338,6 @@
                <button class="filter-period-btn" data-period="all" onclick="updateProfileView('all')">كل الوقت</button>
             </div>
             
-            <!-- شبكة الإحصائيات -->
             <div class="profile-stats-grid">
                <div class="profile-stat-box">
                   <div class="stat-box-title">إجمالي أيام الحضور</div>
@@ -345,7 +357,6 @@
                </div>
             </div>
             
-            <!-- الرسم البياني -->
             <div class="profile-charts">
                <h3 class="profile-card-title"><i class="fas fa-chart-area"></i> تطور التقييم والحضور</h3>
                <div style="height: 250px; width: 100%;">
@@ -353,12 +364,9 @@
                </div>
             </div>
             
-            <!-- السجل الزمني -->
             <div class="profile-timeline-container">
                <h3 class="profile-card-title"><i class="fas fa-history"></i> السجل الكامل والملاحظات</h3>
-               <div class="timeline" id="profile-timeline">
-                  <!-- يتم توليد السجل هنا -->
-               </div>
+               <div class="timeline" id="profile-timeline"></div>
             </div>
          </div>
       </div>
@@ -384,8 +392,43 @@
     </div>
   </div>
 
+  <!-- ═══════════════ قائمة السياق (Long Press) ═══════════════ -->
+  <div class="context-menu" id="context-menu" style="display:none;">
+    <button class="context-menu-item" id="ctx-profile"><i class="fas fa-user"></i> عرض الملف الشخصي</button>
+    <button class="context-menu-item" id="ctx-edit"><i class="fas fa-edit"></i> تعديل الاسم</button>
+    <button class="context-menu-item context-menu-danger" id="ctx-delete"><i class="fas fa-trash-alt"></i> حذف الطالب</button>
+  </div>
+
   <!-- ═══════════════ Toast Container ═══════════════ -->
   <div id="toast-container"></div>
+
+  <!-- ═══════════════ Bottom Navigation Bar ═══════════════ -->
+  <nav class="bottom-nav" id="bottom-nav">
+    <button class="bottom-nav-item active" data-section="dashboard-cards" id="nav-home">
+      <i class="fas fa-home"></i>
+      <span>الرئيسية</span>
+    </button>
+    <button class="bottom-nav-item" data-section="main-table-wrapper" id="nav-students">
+      <i class="fas fa-users"></i>
+      <span>الطلاب</span>
+    </button>
+    <button class="bottom-nav-item nav-fab" id="nav-save-attendance">
+      <i class="fas fa-check-double"></i>
+    </button>
+    <button class="bottom-nav-item" data-section="weekly-report" id="nav-reports">
+      <i class="fas fa-chart-bar"></i>
+      <span>التقارير</span>
+    </button>
+    <button class="bottom-nav-item" data-section="admin-tools-section" id="nav-tools">
+      <i class="fas fa-cogs"></i>
+      <span>أدوات</span>
+    </button>
+  </nav>
+
+  <!-- ═══════════════ FAB: زر تسجيل الحضور العائم ═══════════════ -->
+  <button class="fab-save" id="fab-save" title="تسجيل الحضور">
+    <i class="fas fa-check-double"></i>
+  </button>
 
   <!-- ═══════════════ ملف الاستيراد المخفي ═══════════════ -->
   <input type="file" id="import-file" accept=".json">

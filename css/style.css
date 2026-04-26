@@ -1,30 +1,31 @@
 /* ═══════════════════════════════════
-   style.css - التنسيقات الرئيسية لتطبيق نور الحفاظ
+   style.css - التنسيقات الرئيسية لتطبيق حلقتنا
+   Material Design 3 (Material You)
    ═══════════════════════════════════ */
 
-/* ── المتغيرات ── */
+/* ── المتغيرات - Material 3 Palette ── */
 :root {
-  --color-primary: #166534;
+  --color-primary: #1f5e3a;
   --color-primary-light: #22c55e;
   --color-primary-hover: #15803d;
   --color-accent: #f59e0b;
   --color-accent-light: #fbbf24;
-  --color-bg: #f0fdf4;
+  --color-bg: #eaf7e6;
   --color-white: #ffffff;
   --color-text: #1a2e1a;
   --color-text-light: #4a5e4a;
-  --color-border: #bbf7d0;
+  --color-border: #c8e6c9;
   --color-danger: #dc2626;
   --color-danger-hover: #b91c1c;
   --color-gray: #6b7280;
   --color-gray-light: #e5e7eb;
-  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
-  --shadow-md: 0 2px 12px rgba(0,0,0,0.08);
-  --shadow-lg: 0 8px 30px rgba(0,0,0,0.12);
-  --radius-sm: 6px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  --radius-xl: 16px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.02);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.03);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
   --transition: 0.2s ease;
 }
 
