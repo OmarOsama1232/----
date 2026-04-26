@@ -1,0 +1,163 @@
+/* ═══════════════════════════════════
+   responsive.css - التجاوب مع الشاشات
+   ═══════════════════════════════════ */
+
+/* ── التابلت (768px - 1024px) ── */
+@media (max-width: 1024px) {
+  .dashboard-cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .header {
+    padding: 16px 20px;
+  }
+  .header-title {
+    font-size: 22px;
+  }
+  .container {
+    padding: 16px;
+  }
+  .main-table {
+    min-width: 900px;
+  }
+}
+
+/* ── الموبايل (أقل من 768px) ── */
+@media (max-width: 768px) {
+  .dashboard-cards {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  .dash-card {
+    padding: 16px;
+    gap: 10px;
+  }
+  .dash-card-icon {
+    width: 44px;
+    height: 44px;
+    font-size: 18px;
+  }
+  .dash-card-value {
+    font-size: 22px;
+  }
+  .dash-card-label {
+    font-size: 11px;
+  }
+  .header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 16px;
+    gap: 12px;
+  }
+  .header-right {
+    justify-content: center;
+  }
+  .header-title {
+    font-size: 20px;
+  }
+  .header-logo {
+    font-size: 26px;
+  }
+  .header-left {
+    width: 100%;
+    justify-content: center;
+  }
+  .btn-header {
+    padding: 8px 14px;
+    font-size: 12px;
+  }
+  .controls-bar {
+    flex-direction: column;
+    padding: 14px;
+    gap: 10px;
+  }
+  .search-wrapper {
+    min-width: 100%;
+  }
+  .filter-select {
+    width: 100%;
+  }
+  .btn-add {
+    width: 100%;
+    justify-content: center;
+    padding: 12px;
+  }
+  .container {
+    padding: 12px;
+  }
+  .btn-save-attendance {
+    width: 100%;
+    justify-content: center;
+    font-size: 15px;
+    padding: 14px 20px;
+  }
+  .save-attendance-wrapper {
+    padding: 14px;
+  }
+  .section-header {
+    padding: 14px 18px;
+  }
+  .section-header h2 {
+    font-size: 17px;
+  }
+  .modal-content {
+    padding: 24px;
+    width: 95%;
+    margin: 16px;
+  }
+  .modal-content.modal-lg {
+    max-width: 95%;
+  }
+  .chart-container {
+    height: 280px;
+  }
+  .modal-actions {
+    flex-direction: column;
+  }
+  .btn-primary, .btn-secondary {
+    width: 100%;
+    text-align: center;
+    justify-content: center;
+  }
+  #toast-container {
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+  }
+  .toast {
+    min-width: auto;
+    max-width: none;
+    width: 100%;
+  }
+}
+
+/* ── شاشات صغيرة جداً ── */
+@media (max-width: 480px) {
+  .dashboard-cards {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .dash-card {
+    padding: 12px;
+    flex-direction: column;
+    text-align: center;
+    gap: 8px;
+  }
+  .dash-card-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 16px;
+  }
+  .dash-card-value {
+    font-size: 20px;
+  }
+  .header-title {
+    font-size: 18px;
+  }
+  .hijri-date {
+    font-size: 13px;
+  }
+  .gregorian-date {
+    font-size: 11px;
+  }
+}
