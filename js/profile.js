@@ -42,13 +42,11 @@ function updateProfileSidebar(student) {
     </div>
     <div style="margin-bottom: 15px;">
       <div style="font-size: 13px; color: var(--color-gray);">الحفظ الحالي</div>
-      <div style="font-weight: 600;">${student.currentMemorization.surah || 'لم يحدد'}</div>
-      <div style="font-size: 13px;">${student.currentMemorization.details || ''}</div>
+      <div style="font-weight: 600;">${formatHifzText(student.currentHifz)}</div>
     </div>
     <div>
       <div style="font-size: 13px; color: var(--color-gray);">المراجعة المطلوبة</div>
-      <div style="font-weight: 600;">${student.revision.surah || 'لم يحدد'}</div>
-      <div style="font-size: 13px;">${student.revision.details || ''}</div>
+      <div style="font-weight: 600;">${formatHifzText(student.currentReview)}</div>
     </div>
   `;
 }
@@ -204,40 +202,97 @@ function renderProfileTimeline(records) {
  * طباعة تقرير الطالب (PDF)
  */
 function printStudentProfile() {
-  if (typeof html2canvas === 'undefined' || typeof window.jspdf === 'undefined') {
-    showToast('المكتبة غير متوفرة', 'error');
+  showToast('جاري تجهيز تقرير الطالب للطباعة...', 'success');
+  
+  document.body.classList.add('print-profile-mode');
+  
+  // دالة لإزالة الكلاس بعد الانتهاء من الطباعة أو إلغائها
+  const afterPrint = () => {
+    document.body.classList.remove('print-profile-mode');
+    window.removeEventListener('afterprint', afterPrint);
+  };
+  window.addEventListener('afterprint', afterPrint);
+  
+  // تأخير بسيط للسماح للمتصفح بتطبيق الـ CSS قبل استدعاء نافذة الطباعة
+  setTimeout(() => {
+    window.print();
+    // fallback في حال لم يعمل الحدث afterprint على بعض المتصفحات
+    setTimeout(() => {
+      document.body.classList.remove('print-profile-mode');
+    }, 2000);
+  }, 500);
+}
+
+/**
+ * تصدير بيانات الطالب إلى Excel
+ */
+function exportStudentExcel() {
+  if (typeof XLSX === 'undefined') {
+    showToast('مكتبة SheetJS غير متوفرة', 'error');
     return;
   }
 
-  showToast('جاري تجهيز تقرير الطالب للطباعة...', 'success');
+  if (!currentProfileStudentId) return;
+  const student = getStudentById(currentProfileStudentId);
+  if (!student) return;
+
+  const records = getRecordsForStudent(currentProfileStudentId);
+  const sortedRecords = [...records].sort((a, b) => a.date.localeCompare(b.date));
+
+  if (sortedRecords.length === 0) {
+    showToast('لا توجد بيانات كافية للتصدير', 'warning');
+    return;
+  }
+
+  const wb = XLSX.utils.book_new();
+
+  // Sheet 1: السجل الكامل
+  const historyData = [
+    ['التاريخ', 'الحالة', 'التقييم', 'الملاحظة']
+  ];
   
-  const profileMain = document.querySelector('.profile-main');
-  
-  // مؤقتاً نخفي أزرار الفلترة لتصبح الطباعة أنظف
-  const filters = document.querySelector('.profile-filters');
-  if(filters) filters.style.display = 'none';
-  
-  html2canvas(profileMain, { scale: 1.5, useCORS: true }).then(canvas => {
-    if(filters) filters.style.display = 'flex'; // إعادتها
-    
-    const imgData = canvas.toDataURL('image/png');
-    const { jsPDF } = window.jspdf;
-    const pdf = new jsPDF('p', 'mm', 'a4');
-    
-    const pdfWidth = pdf.internal.pageSize.getWidth();
-    const margin = 10;
-    const renderWidth = pdfWidth - (margin * 2);
-    const pdfHeight = (canvas.height * renderWidth) / canvas.width;
-    
-    const studentName = document.getElementById('profile-student-name').textContent;
-    
-    pdf.setFontSize(16);
-    pdf.text(`تقرير الطالب: ${studentName}`, pdfWidth / 2, 15, { align: "center" });
-    pdf.addImage(imgData, 'PNG', margin, 25, renderWidth, pdfHeight);
-    
-    pdf.save(`تقرير_الطالب_${studentName}.pdf`);
-    showToast('تم حفظ التقرير بنجاح');
+  sortedRecords.forEach(r => {
+    historyData.push([
+      r.date,
+      r.present ? 'حاضر' : 'غائب',
+      r.present ? r.rating : '-',
+      r.note || ''
+    ]);
   });
+  
+  const wsHistory = XLSX.utils.aoa_to_sheet(historyData);
+  // دعم اتجاه النص (من اليمين لليسار)
+  if(!wsHistory['!views']) wsHistory['!views'] = [];
+  wsHistory['!views'].push({ rightToLeft: true });
+  wsHistory['!dir'] = 'rtl';
+  
+  XLSX.utils.book_append_sheet(wb, wsHistory, "السجل الكامل");
+
+  // Sheet 2: ملخص البيانات
+  const validRecords = sortedRecords.filter(r => isClassDay(r.date));
+  const presentDays = validRecords.filter(r => r.present).length;
+  let totalRating = 0;
+  validRecords.filter(r => r.present).forEach(r => totalRating += r.rating);
+  const avgRating = presentDays > 0 ? (totalRating / presentDays).toFixed(2) : 0;
+  
+  const summaryData = [
+    ['الاسم', student.name],
+    ['الأجزاء المحفوظة', `${student.partsMemorized} من ${MAX_PARTS}`],
+    ['الحفظ الحالي', formatHifzText(student.currentHifz)],
+    ['المراجعة المطلوبة', formatHifzText(student.currentReview)],
+    ['إجمالي أيام الحضور', presentDays],
+    ['متوسط التقييم', avgRating]
+  ];
+
+  const wsSummary = XLSX.utils.aoa_to_sheet(summaryData);
+  if(!wsSummary['!views']) wsSummary['!views'] = [];
+  wsSummary['!views'].push({ rightToLeft: true });
+  wsSummary['!dir'] = 'rtl';
+  
+  XLSX.utils.book_append_sheet(wb, wsSummary, "ملخص البيانات");
+
+  XLSX.writeFile(wb, `تقرير_الطالب_${student.name.replace(/ /g, '_')}.xlsx`);
+  showToast('تم تصدير ملف Excel بنجاح', 'success');
 }
 
 /**

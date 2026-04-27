@@ -398,4 +398,65 @@ body {
   .main-table tbody tr { display: table-row !important; }
   .main-table tbody td { display: table-cell !important; }
   .main-table tbody td::before { display: none; }
+  
+  /* ── تنسيقات طباعة الملف الشخصي ── */
+  body.print-profile-mode #header, 
+  body.print-profile-mode #main-content, 
+  body.print-profile-mode .bottom-nav, 
+  body.print-profile-mode .fab-save {
+    display: none !important;
+  }
+  
+  body.print-profile-mode #modal-student-profile {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    background: white !important;
+    display: block !important;
+    overflow: visible !important;
+  }
+  
+  body.print-profile-mode .modal-content {
+    box-shadow: none !important;
+    padding: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+    border: none !important;
+  }
+  
+  body.print-profile-mode .profile-actions,
+  body.print-profile-mode .profile-filters,
+  body.print-profile-mode .btn-secondary,
+  body.print-profile-mode .btn-close-chart {
+    display: none !important;
+  }
+
+  body.print-profile-mode .profile-card,
+  body.print-profile-mode .profile-stat-box,
+  body.print-profile-mode .timeline-item,
+  body.print-profile-mode .profile-charts {
+    page-break-inside: avoid;
+    break-inside: avoid;
+    border: 1px solid #ddd !important;
+    background: #fff !important;
+    color: #000 !important;
+  }
+  
+  body.print-profile-mode .profile-layout {
+    display: block !important;
+  }
+  
+  body.print-profile-mode .profile-sidebar {
+    width: 100% !important;
+    margin-bottom: 20px;
+  }
+  
+  body.print-profile-mode * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
 }

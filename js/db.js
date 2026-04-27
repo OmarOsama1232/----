@@ -271,12 +271,23 @@ function validateAndRepairData() {
       return false;
     }
     // إصلاح حقول ناقصة
-    if (!s.currentMemorization) {
-      s.currentMemorization = { surah: '', surahNumber: 0, details: '' };
+    if (s.currentMemorization) {
+      s.currentHifz = { surah: s.currentMemorization.surah, surahNumber: s.currentMemorization.surahNumber, details: s.currentMemorization.details, from: '', to: '', isFull: false };
+      delete s.currentMemorization;
       repaired = true;
     }
-    if (!s.revision) {
-      s.revision = { surah: '', surahNumber: 0, details: '' };
+    if (!s.currentHifz) {
+      s.currentHifz = { surah: '', surahNumber: 0, details: '', from: '', to: '', isFull: false };
+      repaired = true;
+    }
+
+    if (s.revision) {
+      s.currentReview = { surah: s.revision.surah, surahNumber: s.revision.surahNumber, details: s.revision.details, from: '', to: '', isFull: false };
+      delete s.revision;
+      repaired = true;
+    }
+    if (!s.currentReview) {
+      s.currentReview = { surah: '', surahNumber: 0, details: '', from: '', to: '', isFull: false };
       repaired = true;
     }
     if (typeof s.partsMemorized !== 'number') {

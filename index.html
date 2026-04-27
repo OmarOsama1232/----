@@ -277,15 +277,48 @@
     </div>
   </div>
 
-  <!-- ═══════════════ Modal: تعديل اسم الطالب ═══════════════ -->
+  <!-- ═══════════════ Modal: تعديل بيانات الطالب ═══════════════ -->
   <div class="modal-overlay" id="modal-edit-student">
     <div class="modal-content">
       <div class="modal-title">
-        <i class="fas fa-edit"></i>
-        <span>تعديل اسم الطالب</span>
+        <i class="fas fa-user-edit"></i>
+        <span>تعديل بيانات الطالب</span>
       </div>
       <input type="hidden" id="edit-student-id">
-      <input type="text" id="edit-student-name" class="modal-input" placeholder="الاسم الجديد...">
+      
+      <div class="form-group" style="margin-bottom: 15px;">
+        <label style="display: block; margin-bottom: 5px; font-size: 14px; font-weight: bold;">اسم الطالب</label>
+        <input type="text" id="edit-student-name" class="modal-input" placeholder="الاسم الجديد..." style="margin-bottom: 0;">
+      </div>
+      
+      <div class="form-group" style="margin-bottom: 15px; padding: 10px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+        <label style="display: block; margin-bottom: 8px; font-size: 14px; font-weight: bold; color: var(--color-primary);"><i class="fas fa-book-open"></i> الحفظ الحالي</label>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <select id="edit-mem-surah" class="modal-input" style="margin-bottom: 0;"></select>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <input type="number" id="edit-mem-from" class="modal-input" placeholder="من آية" style="margin-bottom: 0; flex: 1;">
+            <input type="number" id="edit-mem-to" class="modal-input" placeholder="إلى آية" style="margin-bottom: 0; flex: 1;">
+            <label style="display: flex; align-items: center; gap: 4px; white-space: nowrap; font-size: 13px;">
+              <input type="checkbox" id="edit-mem-full" onchange="document.getElementById('edit-mem-from').disabled = this.checked; document.getElementById('edit-mem-to').disabled = this.checked;"> كاملة
+            </label>
+          </div>
+        </div>
+      </div>
+      
+      <div class="form-group" style="margin-bottom: 20px; padding: 10px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+        <label style="display: block; margin-bottom: 8px; font-size: 14px; font-weight: bold; color: var(--color-primary);"><i class="fas fa-book-reader"></i> المراجعة المطلوبة</label>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <select id="edit-rev-surah" class="modal-input" style="margin-bottom: 0;"></select>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <input type="number" id="edit-rev-from" class="modal-input" placeholder="من آية" style="margin-bottom: 0; flex: 1;">
+            <input type="number" id="edit-rev-to" class="modal-input" placeholder="إلى آية" style="margin-bottom: 0; flex: 1;">
+            <label style="display: flex; align-items: center; gap: 4px; white-space: nowrap; font-size: 13px;">
+              <input type="checkbox" id="edit-rev-full" onchange="document.getElementById('edit-rev-from').disabled = this.checked; document.getElementById('edit-rev-to').disabled = this.checked;"> كاملة
+            </label>
+          </div>
+        </div>
+      </div>
+
       <div class="modal-actions">
         <button class="btn-primary" id="btn-save-edit-student">
           <i class="fas fa-save"></i> حفظ
@@ -324,8 +357,11 @@
           <span id="profile-student-name">اسم الطالب</span>
         </div>
         <div style="display:flex; gap:8px;">
+          <button class="btn-secondary" style="padding: 6px 12px; font-size: 13px;" onclick="exportStudentExcel()">
+            <i class="fas fa-file-excel"></i> Excel
+          </button>
           <button class="btn-secondary" style="padding: 6px 12px; font-size: 13px;" onclick="printStudentProfile()">
-            <i class="fas fa-print"></i> طباعة التقرير
+            <i class="fas fa-print"></i> طباعة / PDF
           </button>
           <button class="btn-close-chart" onclick="closeModal('modal-student-profile')">
             <i class="fas fa-times"></i>
