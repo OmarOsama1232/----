@@ -77,6 +77,25 @@
 
   <main class="container" id="main-content">
 
+    <!-- ═══════════════ بطاقة مواقيت الصلاة ═══════════════ -->
+    <div class="prayer-card" id="prayer-card">
+      <div class="prayer-card-right">
+        <i class="fas fa-mosque prayer-icon"></i>
+        <div class="prayer-card-text">
+          <div class="prayer-label">الصلاة القادمة</div>
+          <div class="prayer-name" id="next-prayer-name">جاري التحميل...</div>
+        </div>
+      </div>
+      <div class="prayer-card-left">
+        <i class="fas fa-hourglass-half prayer-clock-icon"></i>
+        <div class="prayer-countdown" id="next-prayer-countdown">--:--:--</div>
+        <button class="btn-retry-prayer" id="btn-retry-prayer" style="display:none;" onclick="event.stopPropagation(); retryPrayerTimes();">
+          <i class="fas fa-redo"></i>
+        </button>
+      </div>
+      <i class="fas fa-chevron-down prayer-expand-icon"></i>
+    </div>
+
     <!-- ═══════════════ بطاقات الإحصائيات ═══════════════ -->
     <div class="dashboard-header">
       <h2><i class="fas fa-chart-pie"></i> نظرة عامة</h2>
@@ -399,6 +418,24 @@
     <button class="context-menu-item context-menu-danger" id="ctx-delete"><i class="fas fa-trash-alt"></i> حذف الطالب</button>
   </div>
 
+  <!-- ═══════════════ Modal: مواقيت الصلاة ═══════════════ -->
+  <div class="modal-overlay" id="modal-prayer-times">
+    <div class="modal-content" style="max-width: 480px;">
+      <div class="modal-title" style="color: var(--color-primary);">
+        <i class="fas fa-mosque" style="color: var(--color-primary);"></i>
+        <span>مواقيت الصلاة لليوم</span>
+      </div>
+      <div class="prayer-times-grid" id="prayer-times-grid">
+        <div class="prayer-loading-text"><i class="fas fa-spinner fa-spin"></i> جاري التحميل...</div>
+      </div>
+      <div class="modal-actions" style="justify-content: center; margin-top: 16px;">
+        <button class="btn-secondary" onclick="closeModal('modal-prayer-times')">
+          <i class="fas fa-times"></i> إغلاق
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- ═══════════════ Toast Container ═══════════════ -->
   <div id="toast-container"></div>
 
@@ -442,6 +479,8 @@
   <script src="js/reports.js"></script>
   <script src="js/charts.js"></script>
   <script src="js/profile.js"></script>
+  <script src="js/prayer.js"></script>
+  <script src="js/backbutton.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

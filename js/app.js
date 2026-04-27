@@ -59,6 +59,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // 15. إضافة data-label للجدول (للعرض كبطاقات على الموبايل)
   injectTableDataLabels();
+
+  // 16. مواقيت الصلاة
+  if (typeof initPrayerTimes === 'function') initPrayerTimes();
+
+  // 17. زر الرجوع (Android)
+  if (typeof initBackButton === 'function') initBackButton();
 });
 
 // ═══════════════════════════════════
