@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
+  <title>حلقتنا - إدارة حلقات تحفيظ القرآن الكريم</title>
+  <meta name="description" content="تطبيق متكامل لإدارة حلقات تحفيظ القرآن الكريم - متابعة الطلاب والحضور والتقييمات">
+
+  <!-- Android / PWA Meta Tags -->
+  <meta name="theme-color" content="#1f5e3a">
+  <meta name="color-scheme" content="light">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+  <!-- PWA Manifest & Icons -->
+  <link rel="manifest" href="manifest.json">
+  <link rel="shortcut icon" href="icon-512.png">
+  <link rel="apple-touch-icon" href="icon-512.png">
+
+  <!-- Google Fonts - Cairo -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Font Awesome 6 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <!-- SheetJS & jsPDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+  <!-- App CSS -->
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+
+  <!-- ═══════════════ بانر عدم الاتصال ═══════════════ -->
+  <div class="offline-banner" id="offline-banner" style="display:none;">
+    <i class="fas fa-wifi-slash"></i>
+    <span>أنت تعمل بدون اتصال — البيانات المحلية متاحة</span>
+  </div>
+
+  <!-- ═══════════════ الشريط العلوي ═══════════════ -->
+  <header class="header" id="header">
+    <div class="header-right">
+      <i class="fas fa-mosque header-logo"></i>
+      <h1 class="header-title">حلقتنا</h1>
+    </div>
+    <div class="header-center">
+      <div id="current-date"></div>
+    </div>
+    <div class="header-left">
+      <button class="btn-header btn-header-excel" id="btn-export-excel" title="تصدير إلى Excel">
+        <i class="fas fa-file-excel"></i>
+        <span>Excel</span>
+      </button>
+      <button class="btn-header btn-header-pdf" id="btn-export-pdf" title="تصدير التقرير كـ PDF">
+        <i class="fas fa-file-pdf"></i>
+        <span>PDF</span>
+      </button>
+      <button class="btn-header" id="btn-export" title="حفظ نسخة احتياطية (JSON)">
+        <i class="fas fa-database"></i>
+        <span>نسخة احتياطية</span>
+      </button>
+      <button class="btn-header" id="btn-import" title="استيراد نسخة احتياطية (JSON)">
+        <i class="fas fa-upload"></i>
+        <span>استيراد</span>
+      </button>
+    </div>
+  </header>
+
+  <main class="container" id="main-content">
+
+    <!-- ═══════════════ بطاقة مواقيت الصلاة ═══════════════ -->
+    <div class="prayer-card" id="prayer-card">
+      <div class="prayer-card-right">
+        <i class="fas fa-mosque prayer-icon"></i>
+        <div class="prayer-card-text">
+          <div class="prayer-label">الصلاة القادمة</div>
+          <div class="prayer-name" id="next-prayer-name">جاري التحميل...</div>
+        </div>
+      </div>
+      <div class="prayer-card-left">
+        <i class="fas fa-hourglass-half prayer-clock-icon"></i>
+        <div class="prayer-countdown" id="next-prayer-countdown">--:--:--</div>
+        <button class="btn-retry-prayer" id="btn-retry-prayer" style="display:none;" onclick="event.stopPropagation(); retryPrayerTimes();">
+          <i class="fas fa-redo"></i>
+        </button>
+      </div>
+      <i class="fas fa-chevron-down prayer-expand-icon"></i>
+    </div>
+
+    <!-- ═══════════════ بطاقات الإحصائيات ═══════════════ -->
+    <div class="dashboard-header">
+      <h2><i class="fas fa-chart-pie"></i> نظرة عامة</h2>
+      <select id="dashboard-period-select" class="filter-select">
+        <option value="week" selected>هذا الأسبوع</option>
+        <option value="month">هذا الشهر</option>
+        <option value="year">هذا العام</option>
+        <option value="all">كل الوقت</option>
+      </select>
+    </div>
+    <div class="dashboard-cards" id="dashboard-cards">
+      <div class="dash-card">
+        <div class="dash-card-icon bg-green"><i class="fas fa-users"></i></div>
+        <div class="dash-card-info">
+          <div class="dash-card-label">إجمالي الطلاب</div>
+          <div class="dash-card-value" id="total-students-count">0</div>
+        </div>
+      </div>
+      <div class="dash-card">
+        <div class="dash-card-icon bg-blue"><i class="fas fa-user-check"></i></div>
+        <div class="dash-card-info">
+          <div class="dash-card-label">الحاضرون اليوم</div>
+          <div class="dash-card-value" id="today-attendance-count">0</div>
+          <div class="dash-card-sub" id="today-attendance-percent">0%</div>
+        </div>
+      </div>
+      <div class="dash-card">
+        <div class="dash-card-icon bg-amber"><i class="fas fa-star-half-alt"></i></div>
+        <div class="dash-card-info">
+          <div class="dash-card-label">متوسط التقييم (7 أيام)</div>
+          <div class="dash-card-value" id="weekly-avg-rating">0.00</div>
+        </div>
+      </div>
+      <div class="dash-card">
+        <div class="dash-card-icon bg-purple"><i class="fas fa-trophy"></i></div>
+        <div class="dash-card-info">
+          <div class="dash-card-label">أعلى طالب تقييماً</div>
+          <div class="dash-card-value" id="top-student-name" style="font-size:18px;">لا يوجد</div>
+          <div class="dash-card-sub" id="top-student-rating">-</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ لوحة الشرف ═══════════════ -->
+    <div class="honor-board-section" id="honor-board-section">
+      <div class="section-header honor-header">
+        <i class="fas fa-award"></i>
+        <h2>لوحة الشرف لهذا الأسبوع</h2>
+      </div>
+      <div class="honor-cards" id="honor-cards-container"></div>
+    </div>
+
+    <!-- ═══════════════ شريط التحكم ═══════════════ -->
+    <div class="controls-bar" id="controls-bar">
+      <div class="search-wrapper">
+        <i class="fas fa-search"></i>
+        <input type="text" id="search-input" class="search-input" placeholder="البحث بالاسم...">
+      </div>
+      <select id="filter-select" class="filter-select">
+        <option value="all">الكل</option>
+        <option value="present">الحاضرون</option>
+        <option value="absent">الغائبون</option>
+      </select>
+      <button class="btn-add" id="btn-add-student">
+        <i class="fas fa-plus-circle"></i>
+        <span>إضافة طالب جديد</span>
+      </button>
+    </div>
+
+    <!-- ═══════════════ الجدول الرئيسي ═══════════════ -->
+    <div class="table-wrapper" id="main-table-wrapper">
+      <div class="table-scroll">
+        <table class="main-table" id="students-table">
+          <thead>
+            <tr>
+              <th>م</th>
+              <th>اسم الطالب</th>
+              <th>الحفظ الحالي</th>
+              <th>المراجعة</th>
+              <th>الأجزاء المحفوظة</th>
+              <th>الحضور</th>
+              <th>التقييم</th>
+              <th>ملاحظات اليوم</th>
+              <th>إجراءات</th>
+            </tr>
+          </thead>
+          <tbody id="students-tbody"></tbody>
+        </table>
+      </div>
+      <div class="save-attendance-wrapper" id="save-button-wrapper">
+        <button class="btn-save-attendance" id="btn-save-attendance">
+          <i class="fas fa-check-double"></i>
+          <span>تسجيل حضور وتقييمات اليوم</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ═══════════════ أدوات المسؤول ═══════════════ -->
+    <div class="admin-tools-section" id="admin-tools-section">
+      <div class="section-header admin-header">
+        <i class="fas fa-cogs"></i>
+        <h2>أدوات المسؤول</h2>
+      </div>
+      <div class="admin-tools-body">
+        <div class="admin-tool-card">
+          <div class="admin-tool-icon"><i class="fas fa-flask"></i></div>
+          <div class="admin-tool-info">
+            <h4>إنشاء بيانات تجريبية (سنة)</h4>
+            <p>إنشاء بيانات حضور وتقييم عشوائية لمدة سنة كاملة (الأحد والخميس فقط)</p>
+          </div>
+          <button class="btn-admin btn-admin-generate" id="btn-generate-mock">
+            <i class="fas fa-magic"></i> إنشاء
+          </button>
+        </div>
+        <div class="admin-tool-card">
+          <div class="admin-tool-icon admin-tool-icon-danger"><i class="fas fa-eraser"></i></div>
+          <div class="admin-tool-info">
+            <h4>حذف البيانات التجريبية</h4>
+            <p>حذف البيانات التجريبية فقط مع الحفاظ على البيانات الحقيقية</p>
+          </div>
+          <button class="btn-admin btn-admin-delete" id="btn-delete-mock">
+            <i class="fas fa-trash"></i> حذف التجريبية
+          </button>
+        </div>
+        <div class="admin-tool-card" id="mock-status-card" style="display:none;">
+          <div class="admin-tool-icon" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8);">
+            <i class="fas fa-info-circle"></i>
+          </div>
+          <div class="admin-tool-info">
+            <h4>حالة البيانات التجريبية</h4>
+            <p id="mock-status-text">لا توجد بيانات تجريبية</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ قسم التقارير الأسبوعية ═══════════════ -->
+    <div class="weekly-section" id="weekly-report">
+      <div class="section-header">
+        <i class="fas fa-chart-bar"></i>
+        <h2>التقرير الأسبوعي</h2>
+      </div>
+      <div class="weekly-scroll">
+        <table class="weekly-table" id="weekly-table">
+          <thead>
+            <tr>
+              <th>م</th>
+              <th>اسم الطالب</th>
+              <th>أيام الحضور</th>
+              <th>نسبة الحضور</th>
+              <th>متوسط التقييم</th>
+              <th>الأجزاء المحفوظة</th>
+              <th>الرسم البياني</th>
+            </tr>
+          </thead>
+          <tbody id="weekly-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ═══════════════ Modal: إضافة طالب ═══════════════ -->
+  <div class="modal-overlay" id="modal-add-student">
+    <div class="modal-content">
+      <div class="modal-title">
+        <i class="fas fa-user-plus"></i>
+        <span>إضافة طالب جديد</span>
+      </div>
+      <input type="text" id="new-student-name" class="modal-input" placeholder="اسم الطالب...">
+      <div class="modal-actions">
+        <button class="btn-primary" id="btn-save-new-student">
+          <i class="fas fa-save"></i> حفظ
+        </button>
+        <button class="btn-secondary" id="btn-cancel-new-student">
+          <i class="fas fa-times"></i> إلغاء
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ Modal: تعديل اسم الطالب ═══════════════ -->
+  <div class="modal-overlay" id="modal-edit-student">
+    <div class="modal-content">
+      <div class="modal-title">
+        <i class="fas fa-edit"></i>
+        <span>تعديل اسم الطالب</span>
+      </div>
+      <input type="hidden" id="edit-student-id">
+      <input type="text" id="edit-student-name" class="modal-input" placeholder="الاسم الجديد...">
+      <div class="modal-actions">
+        <button class="btn-primary" id="btn-save-edit-student">
+          <i class="fas fa-save"></i> حفظ
+        </button>
+        <button class="btn-secondary" id="btn-cancel-edit-student">
+          <i class="fas fa-times"></i> إلغاء
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ Modal: الرسم البياني ═══════════════ -->
+  <div class="modal-overlay" id="modal-chart">
+    <div class="modal-content modal-lg">
+      <div class="chart-header">
+        <div class="modal-title" id="chart-student-name" style="margin-bottom:0;">
+          <i class="fas fa-chart-line"></i>
+          <span>تطور أداء الطالب</span>
+        </div>
+        <button class="btn-close-chart" id="btn-close-chart">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="chart-container">
+        <canvas id="student-chart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ Modal: الملف الشخصي للطالب ═══════════════ -->
+  <div class="modal-overlay" id="modal-student-profile">
+    <div class="modal-content modal-fullscreen">
+      <div class="modal-title" style="justify-content: space-between; border-bottom: 1px solid var(--color-border); padding-bottom: 12px; margin-bottom: 16px;">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <i class="fas fa-user-graduate"></i>
+          <span id="profile-student-name">اسم الطالب</span>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <button class="btn-secondary" style="padding: 6px 12px; font-size: 13px;" onclick="printStudentProfile()">
+            <i class="fas fa-print"></i> طباعة التقرير
+          </button>
+          <button class="btn-close-chart" onclick="closeModal('modal-student-profile')">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      </div>
+      
+      <div class="profile-layout">
+         <div class="profile-sidebar">
+            <div class="profile-card">
+               <h3 class="profile-card-title"><i class="fas fa-book-open"></i> الحفظ والمراجعة</h3>
+               <div id="profile-sidebar-info"></div>
+            </div>
+            <div class="profile-actions" style="margin-top: 16px; display: flex; flex-direction: column; gap: 8px;">
+               <button class="btn-primary" style="width: 100%;" onclick="openEditStudentFromProfile()">
+                 <i class="fas fa-edit"></i> تعديل بيانات الطالب
+               </button>
+               <button class="btn-secondary" style="width: 100%; border-color: var(--color-danger); color: var(--color-danger);" onclick="deleteStudentFromProfile()">
+                 <i class="fas fa-trash-alt"></i> حذف الطالب
+               </button>
+            </div>
+         </div>
+         
+         <div class="profile-main">
+            <div class="profile-filters">
+               <button class="filter-period-btn active" data-period="week" onclick="updateProfileView('week')">أسبوعياً</button>
+               <button class="filter-period-btn" data-period="month" onclick="updateProfileView('month')">شهرياً</button>
+               <button class="filter-period-btn" data-period="year" onclick="updateProfileView('year')">سنوياً</button>
+               <button class="filter-period-btn" data-period="all" onclick="updateProfileView('all')">كل الوقت</button>
+            </div>
+            
+            <div class="profile-stats-grid">
+               <div class="profile-stat-box">
+                  <div class="stat-box-title">إجمالي أيام الحضور</div>
+                  <div class="stat-box-value" id="prof-stat-attendance-days">0</div>
+               </div>
+               <div class="profile-stat-box">
+                  <div class="stat-box-title">نسبة الحضور</div>
+                  <div class="stat-box-value" id="prof-stat-attendance-rate">0%</div>
+               </div>
+               <div class="profile-stat-box">
+                  <div class="stat-box-title">متوسط التقييم</div>
+                  <div class="stat-box-value" id="prof-stat-avg-rating">0.0</div>
+               </div>
+               <div class="profile-stat-box">
+                  <div class="stat-box-title">أفضل تقييم</div>
+                  <div class="stat-box-value" id="prof-stat-best-rating">0</div>
+               </div>
+            </div>
+            
+            <div class="profile-charts">
+               <h3 class="profile-card-title"><i class="fas fa-chart-area"></i> تطور التقييم والحضور</h3>
+               <div style="height: 250px; width: 100%;">
+                  <canvas id="profile-chart"></canvas>
+               </div>
+            </div>
+            
+            <div class="profile-timeline-container">
+               <h3 class="profile-card-title"><i class="fas fa-history"></i> السجل الكامل والملاحظات</h3>
+               <div class="timeline" id="profile-timeline"></div>
+            </div>
+         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ Modal: تأكيد مخصص ═══════════════ -->
+  <div class="modal-overlay" id="modal-custom-confirm">
+    <div class="modal-content" style="max-width: 440px;">
+      <div class="modal-title" style="color: var(--color-danger);">
+        <i class="fas fa-exclamation-triangle" style="color: var(--color-danger);"></i>
+        <span id="confirm-title">تأكيد العملية</span>
+      </div>
+      <p id="confirm-message" style="font-size: 15px; line-height: 1.8; margin-bottom: 20px; color: var(--color-text-light);"></p>
+      <div class="modal-actions" style="justify-content: flex-end;">
+        <button class="btn-primary" id="btn-confirm-yes" style="background: linear-gradient(135deg, #f87171, #dc2626);">
+          <i class="fas fa-check"></i> نعم، تأكيد
+        </button>
+        <button class="btn-secondary" id="btn-confirm-no">
+          <i class="fas fa-times"></i> إلغاء
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ قائمة السياق (Long Press) ═══════════════ -->
+  <div class="context-menu" id="context-menu" style="display:none;">
+    <button class="context-menu-item" id="ctx-profile"><i class="fas fa-user"></i> عرض الملف الشخصي</button>
+    <button class="context-menu-item" id="ctx-edit"><i class="fas fa-edit"></i> تعديل الاسم</button>
+    <button class="context-menu-item context-menu-danger" id="ctx-delete"><i class="fas fa-trash-alt"></i> حذف الطالب</button>
+  </div>
+
+  <!-- ═══════════════ Modal: مواقيت الصلاة ═══════════════ -->
+  <div class="modal-overlay" id="modal-prayer-times">
+    <div class="modal-content" style="max-width: 480px;">
+      <div class="modal-title" style="color: var(--color-primary);">
+        <i class="fas fa-mosque" style="color: var(--color-primary);"></i>
+        <span>مواقيت الصلاة لليوم</span>
+      </div>
+      <div class="prayer-times-grid" id="prayer-times-grid">
+        <div class="prayer-loading-text"><i class="fas fa-spinner fa-spin"></i> جاري التحميل...</div>
+      </div>
+      <div class="modal-actions" style="justify-content: center; margin-top: 16px;">
+        <button class="btn-secondary" onclick="closeModal('modal-prayer-times')">
+          <i class="fas fa-times"></i> إغلاق
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ Toast Container ═══════════════ -->
+  <div id="toast-container"></div>
+
+  <!-- ═══════════════ Bottom Navigation Bar ═══════════════ -->
+  <nav class="bottom-nav" id="bottom-nav">
+    <button class="bottom-nav-item active" data-section="dashboard-cards" id="nav-home">
+      <i class="fas fa-home"></i>
+      <span>الرئيسية</span>
+    </button>
+    <button class="bottom-nav-item" data-section="main-table-wrapper" id="nav-students">
+      <i class="fas fa-users"></i>
+      <span>الطلاب</span>
+    </button>
+    <button class="bottom-nav-item nav-fab" id="nav-save-attendance">
+      <i class="fas fa-check-double"></i>
+    </button>
+    <button class="bottom-nav-item" data-section="weekly-report" id="nav-reports">
+      <i class="fas fa-chart-bar"></i>
+      <span>التقارير</span>
+    </button>
+    <button class="bottom-nav-item" data-section="admin-tools-section" id="nav-tools">
+      <i class="fas fa-cogs"></i>
+      <span>أدوات</span>
+    </button>
+  </nav>
+
+  <!-- ═══════════════ FAB: زر تسجيل الحضور العائم ═══════════════ -->
+  <button class="fab-save" id="fab-save" title="تسجيل الحضور">
+    <i class="fas fa-check-double"></i>
+  </button>
+
+  <!-- ═══════════════ ملف الاستيراد المخفي ═══════════════ -->
+  <input type="file" id="import-file" accept=".json">
+
+  <!-- ═══════════════ JavaScript Files ═══════════════ -->
+  <script src="js/constants.js"></script>
+  <script src="js/db.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/students.js"></script>
+  <script src="js/attendance.js"></script>
+  <script src="js/reports.js"></script>
+  <script src="js/charts.js"></script>
+  <script src="js/profile.js"></script>
+  <script src="js/prayer.js"></script>
+  <script src="js/backbutton.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

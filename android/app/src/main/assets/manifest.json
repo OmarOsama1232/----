@@ -1,0 +1,21 @@
+{
+  "name": "حلقتنا - إدارة حلقات تحفيظ القرآن",
+  "short_name": "حلقتنا",
+  "description": "تطبيق متكامل لإدارة حلقات تحفيظ القرآن الكريم",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#eaf7e6",
+  "theme_color": "#1f5e3a",
+  "lang": "ar",
+  "dir": "rtl",
+  "categories": ["education", "lifestyle"],
+  "icons": [
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
