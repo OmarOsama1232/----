@@ -29,6 +29,14 @@ const PRAYER_STORAGE_KEY = 'prayerTimesCache';
 
 let prayerCountdownInterval = null;
 
+function formatTo12Hour(time24) {
+  if (!time24 || !time24.includes(':') || time24 === '--:--') return time24;
+  let [hours, minutes] = time24.split(':');
+  let period = (+hours >= 12) ? 'م' : 'ص';
+  let hours12 = (+hours % 12) || 12;
+  return `${hours12}:${minutes} ${period}`;
+}
+
 // ═══════════════════════════════════
 // ■ تهيئة مواقيت الصلاة
 // ═══════════════════════════════════
@@ -150,7 +158,7 @@ function displayPrayerData(data) {
   const grid = document.getElementById('prayer-times-grid');
   if (grid) {
     grid.innerHTML = PRAYER_KEYS.map(key => {
-      const time = data.timings[key] || '--:--';
+      const time = data.timings[key] ? formatTo12Hour(data.timings[key]) : '--:--';
       const icon = PRAYER_ICONS[key] || 'fa-clock';
       const name = PRAYER_NAMES[key];
       return `
@@ -168,7 +176,7 @@ function displayPrayerData(data) {
         <div class="prayer-time-item prayer-sunrise">
           <i class="fas fa-sun"></i>
           <div class="prayer-time-name">الشروق</div>
-          <div class="prayer-time-value">${data.timings.Sunrise}</div>
+          <div class="prayer-time-value">${formatTo12Hour(data.timings.Sunrise)}</div>
         </div>
       `;
       grid.innerHTML = grid.innerHTML.replace('</div>', '</div>' + sunriseHTML);
