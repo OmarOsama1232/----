@@ -66,9 +66,7 @@ function saveNewStudent() {
   closeModal('modal-add-student');
   
   // إعادة رسم الواجهة
-  renderStudentsTable();
-  updateDashboardCards();
-  renderWeeklyReport();
+  refreshMainViews();
   
   showToast(`تمت إضافة الطالب "${name}" بنجاح`);
 }
@@ -117,7 +115,7 @@ function openEditStudentModal(studentId) {
   
   openModal('modal-edit-student');
   setTimeout(() => {
-    if (input) input.focus();
+    if (inputName) inputName.focus();
   }, 100);
 }
 
@@ -175,8 +173,7 @@ function saveEditStudent() {
   updateStudent(student);
   
   closeModal('modal-edit-student');
-  renderStudentsTable();
-  renderWeeklyReport();
+  refreshMainViews();
   
   showToast(`تم تعديل اسم الطالب بنجاح`);
 }
@@ -202,9 +199,7 @@ async function confirmDeleteStudent(studentId) {
 
   if (confirmed) {
     deleteStudent(studentId);
-    renderStudentsTable();
-    updateDashboardCards();
-    renderWeeklyReport();
+    refreshMainViews();
     showToast(`تم حذف الطالب "${student.name}" وجميع سجلاته (${recordsCount} سجل)`);
   }
 }

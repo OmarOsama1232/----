@@ -17,6 +17,10 @@ const ASSETS = [
   '/js/reports.js',
   '/js/charts.js',
   '/js/profile.js',
+  '/js/prayer.js',
+  '/js/native.js',
+  '/js/qibla.js',
+  '/js/backbutton.js',
   '/js/app.js',
   '/icon-512.png',
   '/manifest.json'

@@ -460,3 +460,79 @@ body {
     print-color-adjust: exact !important;
   }
 }
+
+
+/* FIX 5: Responsive Android Layout */
+@media (max-width: 768px) {
+  .profile-export-actions {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .profile-export-actions .btn-secondary,
+  .profile-export-actions .btn-close-chart {
+    flex: 1 1 calc(50% - 8px);
+  }
+
+  .prayer-card-left {
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .prayer-settings-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .prayer-settings-row .filter-select {
+    width: 100%;
+  }
+
+  .prayer-settings-actions {
+    flex-direction: column;
+  }
+
+  .prayer-settings-actions .btn-secondary {
+    width: 100%;
+  }
+
+  .qibla-compass {
+    width: min(82vw, 280px);
+    height: min(82vw, 280px);
+  }
+
+  .qibla-arrow {
+    border-left-width: 12px;
+    border-right-width: 12px;
+    border-bottom-width: 86px;
+  }
+
+  .export-loading-box {
+    width: min(88vw, 320px);
+    min-width: 0;
+  }
+}
+
+@media (max-width: 600px) {
+  .container { padding: 10px; }
+
+  .controls-bar,
+  .table-wrapper,
+  .weekly-section,
+  .admin-tools-section {
+    border-radius: 14px;
+  }
+
+  .profile-layout {
+    gap: 12px;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1200px) {
+  .profile-layout {
+    display: grid;
+    grid-template-columns: minmax(260px, 320px) 1fr;
+    gap: 20px;
+  }
+}
