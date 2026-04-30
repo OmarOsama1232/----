@@ -27,7 +27,7 @@ public class PrayerAlarmReceiver extends BroadcastReceiver {
         );
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, PrayerNotificationScheduler.CHANNEL_ID)
-                .setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
+                .setSmallIcon(R.drawable.ic_prayer_notification)
                 .setContentTitle(title == null ? "تذكير الصلاة" : title)
                 .setContentText(body == null ? "اقترب موعد الصلاة" : body)
                 .setStyle(new NotificationCompat.BigTextStyle().bigText(body))

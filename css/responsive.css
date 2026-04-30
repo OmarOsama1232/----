@@ -352,6 +352,27 @@ body {
 }
 
 /* ═══════════════════════════════════
+   MEDIUM PHONES 600px - 767px
+   ═══════════════════════════════════ */
+@media (min-width: 600px) and (max-width: 767px) {
+  .dashboard-cards { grid-template-columns: repeat(2, 1fr); gap: 14px; }
+  .table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .main-table thead { display: table-header-group; }
+  .main-table tbody tr { display: table-row !important; }
+  .main-table tbody td { display: table-cell !important; padding: 10px 8px; font-size: 13px; text-align: right; }
+  .main-table tbody td::before { display: none; }
+  .main-table tbody td.col-num { display: table-cell; }
+  .main-table tbody td.col-name { grid-column: auto; font-size: 14px; padding-bottom: 10px; border-bottom: none; }
+  .main-table tbody td.col-memorization,
+  .main-table tbody td.col-revision { grid-column: auto; }
+  .main-table tbody td.col-actions { grid-column: auto; justify-content: flex-end; padding-top: 10px; border-top: none; }
+  .container { padding: 16px; }
+  .controls-bar { flex-wrap: wrap; gap: 10px; }
+  .search-wrapper { min-width: auto; flex: 1 1 200px; order: 0; }
+  .dash-card-value { font-size: clamp(22px, 5vw, 28px); }
+}
+
+/* ═══════════════════════════════════
    SMALL PHONES < 400px
    ═══════════════════════════════════ */
 @media (max-width: 400px) {
@@ -373,6 +394,19 @@ body {
   .main-table { min-width: 900px; }
   .modal-content.modal-fullscreen { width: 90%; height: 90vh; border-radius: 24px; }
   .profile-stats-grid { grid-template-columns: repeat(4, 1fr); }
+  .profile-layout { display: grid; grid-template-columns: minmax(260px, 320px) 1fr; gap: 20px; }
+  .header-center { display: flex; gap: 6px; }
+  .header-left { display: flex; }
+}
+
+@media (min-width: 1025px) and (max-width: 1200px) {
+  .dashboard-cards { grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .profile-layout { display: grid; grid-template-columns: minmax(280px, 340px) 1fr; gap: 24px; }
+  .profile-stats-grid { grid-template-columns: repeat(4, 1fr); }
+  .container { padding: 24px; }
+  .honor-cards { gap: 14px; }
+  .controls-bar { flex-wrap: nowrap; gap: 12px; }
+  .search-wrapper { min-width: 220px; flex: 1; }
 }
 
 /* ═══════════════════════════════════

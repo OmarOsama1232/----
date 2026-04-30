@@ -1920,6 +1920,27 @@ body {
 }
 
 /* ═══════════════════════════════════
+   MEDIUM PHONES 600px - 767px
+   ═══════════════════════════════════ */
+@media (min-width: 600px) and (max-width: 767px) {
+  .dashboard-cards { grid-template-columns: repeat(2, 1fr); gap: 14px; }
+  .table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .main-table thead { display: table-header-group; }
+  .main-table tbody tr { display: table-row !important; }
+  .main-table tbody td { display: table-cell !important; padding: 10px 8px; font-size: 13px; text-align: right; }
+  .main-table tbody td::before { display: none; }
+  .main-table tbody td.col-num { display: table-cell; }
+  .main-table tbody td.col-name { grid-column: auto; font-size: 14px; padding-bottom: 10px; border-bottom: none; }
+  .main-table tbody td.col-memorization,
+  .main-table tbody td.col-revision { grid-column: auto; }
+  .main-table tbody td.col-actions { grid-column: auto; justify-content: flex-end; padding-top: 10px; border-top: none; }
+  .container { padding: 16px; }
+  .controls-bar { flex-wrap: wrap; gap: 10px; }
+  .search-wrapper { min-width: auto; flex: 1 1 200px; order: 0; }
+  .dash-card-value { font-size: clamp(22px, 5vw, 28px); }
+}
+
+/* ═══════════════════════════════════
    SMALL PHONES < 400px
    ═══════════════════════════════════ */
 @media (max-width: 400px) {
@@ -1941,6 +1962,19 @@ body {
   .main-table { min-width: 900px; }
   .modal-content.modal-fullscreen { width: 90%; height: 90vh; border-radius: 24px; }
   .profile-stats-grid { grid-template-columns: repeat(4, 1fr); }
+  .profile-layout { display: grid; grid-template-columns: minmax(260px, 320px) 1fr; gap: 20px; }
+  .header-center { display: flex; gap: 6px; }
+  .header-left { display: flex; }
+}
+
+@media (min-width: 1025px) and (max-width: 1200px) {
+  .dashboard-cards { grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .profile-layout { display: grid; grid-template-columns: minmax(280px, 340px) 1fr; gap: 24px; }
+  .profile-stats-grid { grid-template-columns: repeat(4, 1fr); }
+  .container { padding: 24px; }
+  .honor-cards { gap: 14px; }
+  .controls-bar { flex-wrap: nowrap; gap: 12px; }
+  .search-wrapper { min-width: 220px; flex: 1; }
 }
 
 /* ═══════════════════════════════════
@@ -2600,6 +2634,16 @@ body {
           </button>
           <button class="btn-secondary" id="btn-open-qibla-from-prayer">
             <i class="fas fa-compass"></i> القبلة
+          </button>
+        </div>
+        <div id="exact-alarm-warning" style="display:none; margin-top:10px; padding:10px 14px; background:var(--color-warning-bg, #fef3c7); border-radius:12px; font-size:13px; color:#92400e; text-align:right;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+            <i class="fas fa-exclamation-triangle" style="color:#d97706;"></i>
+            <strong>المنبهات الدقيقة معطلة</strong>
+          </div>
+          <p style="margin:0 0 8px 0;">التذكيرات ستكون تقريبية. فعّل المنبهات الدقيقة من إعدادات الجهاز للضبط بدقة.</p>
+          <button class="btn-secondary" id="btn-open-exact-alarm-settings" style="width:100%; min-height:40px;">
+            <i class="fas fa-cog"></i> فتح إعدادات المنبهات
           </button>
         </div>
       </div>
@@ -3448,6 +3492,30 @@ window.HalaqatnaNativeBridge = {
       console.warn('Compass stop failed:', error);
     }
     return false;
+  },
+
+  checkExactAlarmPermission() {
+    try {
+      if (this.isAndroidApp() && window.HalaqatnaBridge.checkExactAlarmPermission) {
+        window.HalaqatnaBridge.checkExactAlarmPermission();
+        return true;
+      }
+    } catch (error) {
+      console.warn('Exact alarm check failed:', error);
+    }
+    return false;
+  },
+
+  openExactAlarmSettings() {
+    try {
+      if (this.isAndroidApp() && window.HalaqatnaBridge.openExactAlarmSettings) {
+        window.HalaqatnaBridge.openExactAlarmSettings();
+        return true;
+      }
+    } catch (error) {
+      console.warn('Open exact alarm settings failed:', error);
+    }
+    return false;
   }
 };
 
@@ -3462,6 +3530,12 @@ window.HalaqatnaNative = {
     const parsed = Number(degrees);
     document.dispatchEvent(new CustomEvent('halaqatna:heading-update', {
       detail: { degrees: Number.isFinite(parsed) ? parsed : null }
+    }));
+  },
+
+  onExactAlarmStatus(canSchedule) {
+    document.dispatchEvent(new CustomEvent('halaqatna:exact-alarm-status', {
+      detail: { canSchedule: !!canSchedule }
     }));
   }
 };
@@ -5310,7 +5384,8 @@ const PRAYER_SETTINGS_KEY = 'halaqatna_prayer_settings';
 const DEFAULT_PRAYER_SETTINGS = {
   enabled: false,
   reminderMinutes: 10,
-  permission: 'default'
+  permission: 'default',
+  exactAlarmAvailable: true
 };
 
 let prayerCountdownInterval = null;
@@ -5510,6 +5585,10 @@ function getPrayerNotificationStatusText(settings) {
     return 'يلزم منح الإذن أولاً لتفعيل تذكيرات الصلاة.';
   }
 
+  if (!settings.exactAlarmAvailable) {
+    return `سيصل التذكير قبل الصلاة بـ ${settings.reminderMinutes} دقائق (تقريبي). فعّل المنبهات الدقيقة من الإعدادات لضبط الوقت بدقة.`;
+  }
+
   return `سيصل التذكير قبل الصلاة بـ ${settings.reminderMinutes} دقائق.`;
 }
 
@@ -5518,10 +5597,16 @@ function renderPrayerNotificationSettings() {
   const toggle = document.getElementById('prayer-notifications-enabled');
   const reminderSelect = document.getElementById('prayer-reminder-minutes');
   const status = document.getElementById('prayer-notification-status');
+  const alarmWarning = document.getElementById('exact-alarm-warning');
 
   if (toggle) toggle.checked = !!settings.enabled;
   if (reminderSelect) reminderSelect.value = String(settings.reminderMinutes);
   if (status) status.textContent = getPrayerNotificationStatusText(settings);
+
+  if (alarmWarning) {
+    const showWarning = settings.enabled && settings.permission === 'granted' && !settings.exactAlarmAvailable;
+    alarmWarning.style.display = showWarning ? 'block' : 'none';
+  }
 }
 
 async function requestBrowserNotificationPermission() {
@@ -5731,9 +5816,21 @@ function initPrayerTimes() {
     }
   });
 
+  document.addEventListener('halaqatna:exact-alarm-status', (event) => {
+    const { canSchedule } = event.detail || {};
+    updatePrayerSettings({ exactAlarmAvailable: !!canSchedule });
+    renderPrayerNotificationSettings();
+  });
+
+  document.getElementById('btn-open-exact-alarm-settings')?.addEventListener('click', () => {
+    window.HalaqatnaNativeBridge?.openExactAlarmSettings?.();
+  });
+
   const browserPermission = typeof Notification !== 'undefined' ? Notification.permission : 'default';
   if (!window.HalaqatnaNativeBridge?.isAndroidApp?.()) {
     updatePrayerSettings({ permission: browserPermission });
+  } else {
+    window.HalaqatnaNativeBridge?.checkExactAlarmPermission?.();
   }
 
   renderPrayerNotificationSettings();
@@ -5759,7 +5856,8 @@ const qiblaState = {
   nativeCompassActive: false,
   headingSource: 'unknown',
   calibrationOffset: 0,
-  headingTimeoutId: null
+  headingTimeoutId: null,
+  lowAccuracy: false
 };
 
 function loadQiblaCalibration() {
@@ -5828,6 +5926,8 @@ function renderQiblaState(message = '') {
       statusText.textContent = message;
     } else if (qiblaState.heading == null) {
       statusText.textContent = 'حرّك الهاتف على شكل رقم 8 إذا كان الاتجاه غير دقيق.';
+    } else if (qiblaState.lowAccuracy) {
+      statusText.textContent = 'دقة البوصلة منخفضة. حرّك الهاتف على شكل رقم 8 لتحسين القراءة.';
     } else {
       statusText.textContent = qiblaState.headingSource === 'native'
         ? 'تم استخدام مستشعر الجهاز الأصلي لرفع الدقة.'
@@ -5873,6 +5973,12 @@ function stopQiblaCompass() {
 function onQiblaOrientation(event) {
   const heading = getHeadingFromOrientationEvent(event);
   if (heading == null) return;
+
+  const accuracy = event.webkitCompassAccuracy || event.accuracy;
+  if (typeof accuracy === 'number' && accuracy >= 0) {
+    qiblaState.lowAccuracy = accuracy > 20;
+  }
+
   handleQiblaHeading(heading, 'web');
 }
 

@@ -325,5 +325,28 @@ public class MainActivity extends AppCompatActivity {
         public void stopCompass() {
             stopHeadingSensor();
         }
+
+        @JavascriptInterface
+        public void checkExactAlarmPermission() {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+                boolean canSchedule = alarmManager != null && alarmManager.canScheduleExactAlarms();
+                runJavascript("window.HalaqatnaNative && window.HalaqatnaNative.onExactAlarmStatus(" + canSchedule + ");");
+            } else {
+                runJavascript("window.HalaqatnaNative && window.HalaqatnaNative.onExactAlarmStatus(true);");
+            }
+        }
+
+        @JavascriptInterface
+        public void openExactAlarmSettings() {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                try {
+                    android.content.Intent intent = new android.content.Intent(
+                            android.provider.Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM);
+                    intent.setData(android.net.Uri.parse("package:" + getPackageName()));
+                    startActivity(intent);
+                } catch (Exception ignored) {}
+            }
+        }
     }
 }
