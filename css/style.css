@@ -2078,3 +2078,694 @@ button { cursor: pointer; }
 }
 
 .print-profile-mode .modal-overlay:not(#modal-student-profile) { display: none !important; }
+
+/* ════════════════════════════════════════════════
+   ■ نظام صفحات SPA — إظهار وإخفاء الصفحات
+   ════════════════════════════════════════════════ */
+
+#main-content {
+  min-height: calc(100vh - 72px - 68px);
+  padding-bottom: 80px;
+  overflow-x: hidden;
+  position: relative;
+}
+
+.app-page {
+  display: none;
+  width: 100%;
+  min-height: calc(100vh - 152px);
+  animation: pageFadeIn .25s ease;
+}
+
+.app-page.page-active {
+  display: block;
+}
+
+.app-page.page-hidden {
+  display: none;
+}
+
+@keyframes pageFadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.page-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px 20px;
+}
+
+/* ════════════════════════════════════════════════
+   ■ عناوين الصفحات
+   ════════════════════════════════════════════════ */
+.page-title {
+  font-size: clamp(18px, 3vw, 22px);
+  font-weight: 800;
+  color: var(--color-text);
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-right: 4px solid var(--color-primary-light);
+  padding-right: 12px;
+}
+
+.page-title i {
+  color: var(--color-primary-light);
+}
+
+/* ════════════════════════════════════════════════
+   ■ لوحة التحكم — Welcome Section
+   ════════════════════════════════════════════════ */
+.welcome-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.welcome-title {
+  font-size: clamp(18px, 3.5vw, 22px);
+  font-weight: 800;
+  color: var(--color-text);
+  margin-bottom: 4px;
+}
+
+.welcome-sub {
+  font-size: 13px;
+  color: var(--color-text-sec);
+}
+
+.dashboard-period-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filter-select-sm {
+  padding: 7px 12px;
+  font-size: 13px;
+  min-width: 130px;
+}
+
+/* ════════════════════════════════════════════════
+   ■ الأزرار السريعة (Quick Actions)
+   ════════════════════════════════════════════════ */
+.quick-actions {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-top: 24px;
+  margin-bottom: 12px;
+}
+
+.quick-action-btn {
+  background: var(--color-surface);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 16px 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text);
+  cursor: pointer;
+  transition: all var(--transition-md);
+  box-shadow: var(--shadow-xs);
+  font-family: var(--font-family);
+  min-height: 88px;
+}
+
+.quick-action-btn i {
+  font-size: 22px;
+  color: var(--color-primary-light);
+}
+
+.quick-action-btn:hover {
+  background: var(--color-surface-3);
+  border-color: var(--color-primary-light);
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+}
+
+.quick-action-btn:active {
+  transform: scale(.96);
+}
+
+/* ════════════════════════════════════════════════
+   ■ قسم التنبيهات (Alerts)
+   ════════════════════════════════════════════════ */
+.alerts-section {
+  margin-bottom: 20px;
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border-light);
+  overflow: hidden;
+  box-shadow: var(--shadow-xs);
+}
+
+.alerts-header {
+  background: linear-gradient(135deg, #b45309, #92400e) !important;
+}
+
+.alerts-list {
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.alert-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.alert-absent {
+  background: rgba(198, 40, 40, .08);
+  color: var(--color-danger);
+  border: 1px solid rgba(198, 40, 40, .18);
+}
+
+.alert-absent i { color: var(--color-danger); }
+
+/* ════════════════════════════════════════════════
+   ■ بطاقات الطلاب (Students Cards Grid)
+   ════════════════════════════════════════════════ */
+.students-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.student-card {
+  background: var(--color-surface);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--color-border-light);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  cursor: pointer;
+  transition: all var(--transition-md);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.student-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--color-primary-light);
+}
+
+.student-card:active {
+  transform: scale(.98);
+}
+
+.card-header-strip {
+  height: 5px;
+  background: linear-gradient(90deg, var(--color-primary), var(--color-primary-light));
+  width: 100%;
+}
+
+.card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 16px 10px;
+}
+
+.card-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: 800;
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(0,0,0,.3);
+  flex-shrink: 0;
+  box-shadow: 0 3px 10px rgba(0,0,0,.2);
+}
+
+.card-attendance-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border-radius: var(--radius-full);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.card-present {
+  background: rgba(34, 197, 94, .12);
+  color: #16a34a;
+  border: 1px solid rgba(34, 197, 94, .25);
+}
+
+.card-absent {
+  background: rgba(198, 40, 40, .08);
+  color: var(--color-danger);
+  border: 1px solid rgba(198, 40, 40, .18);
+}
+
+[data-theme="dark"] .card-present {
+  background: rgba(34, 197, 94, .15);
+  color: #4ade80;
+}
+
+.card-body {
+  padding: 0 16px 12px;
+  flex: 1;
+}
+
+.card-name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.card-name {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--color-text);
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.card-badges {
+  display: flex;
+  gap: 3px;
+  flex-shrink: 0;
+}
+
+.card-badge {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.card-rating {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+
+.card-star {
+  color: #f59e0b;
+  font-size: 11px;
+}
+
+.card-rating-num {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-text-sec);
+  margin-right: 4px;
+}
+
+.card-no-rating {
+  font-size: 11px;
+  color: var(--color-text-light);
+}
+
+.card-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 10px;
+}
+
+.card-stat-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--color-text-sec);
+}
+
+.card-stat-icon {
+  color: var(--color-primary-light);
+  font-size: 10px;
+  width: 14px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.card-stat-label {
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.card-stat-val {
+  color: var(--color-text);
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 11.5px;
+}
+
+.card-parts-progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.card-progress-bar {
+  flex: 1;
+  height: 6px;
+  background: var(--color-surface-3);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.card-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-primary-light), var(--color-primary));
+  border-radius: var(--radius-full);
+  transition: width .4s ease;
+}
+
+.card-progress-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-text-sec);
+  white-space: nowrap;
+  min-width: 32px;
+}
+
+.card-footer {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 12px;
+  border-top: 1px solid var(--color-border-light);
+  background: var(--color-surface-2);
+}
+
+.card-profile-btn {
+  flex: 1;
+  background: linear-gradient(135deg, var(--color-primary-mid), var(--color-primary));
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 7px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: var(--font-family);
+  cursor: pointer;
+  transition: all var(--transition);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  justify-content: center;
+}
+
+.card-profile-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(15,76,58,.3);
+}
+
+.card-edit-btn,
+.card-delete-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: var(--radius-xs);
+  font-size: 13px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition);
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.card-edit-btn {
+  background: linear-gradient(135deg, var(--color-gold-light), var(--color-gold));
+}
+
+.card-delete-btn {
+  background: linear-gradient(135deg, #f87171, var(--color-danger));
+}
+
+.card-edit-btn:hover   { transform: scale(1.1); }
+.card-delete-btn:hover { transform: scale(1.1); }
+
+/* حالة فارغة في البطاقات */
+.cards-empty-state {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--color-text-sec);
+}
+
+.cards-empty-state i {
+  font-size: 64px;
+  opacity: .25;
+  color: var(--color-primary-light);
+  display: block;
+  margin-bottom: 16px;
+}
+
+.cards-empty-state p {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+/* ════════════════════════════════════════════════
+   ■ صفحة الحضور
+   ════════════════════════════════════════════════ */
+.attendance-page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.attendance-date-badge {
+  background: var(--color-surface-3);
+  color: var(--color-primary);
+  border: 1px solid var(--color-border);
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+[data-theme="dark"] .attendance-date-badge {
+  color: var(--color-primary-light);
+  background: var(--color-surface-2);
+}
+
+/* ════════════════════════════════════════════════
+   ■ صفحة الإعدادات
+   ════════════════════════════════════════════════ */
+.settings-section {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border-light);
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+
+.settings-body {
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.setting-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 12px;
+  border-radius: var(--radius-md);
+  transition: background var(--transition);
+  cursor: default;
+}
+
+.setting-item:hover {
+  background: var(--color-surface-2);
+}
+
+.setting-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, var(--color-primary-mid), var(--color-primary));
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.setting-info {
+  flex: 1;
+}
+
+.setting-info h4 {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: 3px;
+}
+
+.setting-info p {
+  font-size: 12px;
+  color: var(--color-text-sec);
+}
+
+.btn-setting-action {
+  background: linear-gradient(135deg, var(--color-primary-mid), var(--color-primary));
+  color: #fff;
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition);
+  flex-shrink: 0;
+}
+
+.btn-setting-action:hover {
+  transform: scale(1.08);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ════════════════════════════════════════════════
+   ■ Bottom Nav - الـ FAB في الوسط
+   ════════════════════════════════════════════════ */
+.bottom-nav {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.nav-fab {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--color-primary-mid), var(--color-primary));
+  color: #fff;
+  border: 3px solid var(--color-bg);
+  font-size: 18px;
+  box-shadow: 0 4px 16px rgba(15,76,58,.4);
+  transform: translateY(-10px);
+  transition: all var(--transition-md);
+  flex-direction: column;
+}
+
+.nav-fab:hover {
+  transform: translateY(-14px) scale(1.05);
+  box-shadow: 0 8px 24px rgba(15,76,58,.5);
+}
+
+.nav-fab:active {
+  transform: translateY(-8px) scale(.95);
+}
+
+.nav-fab i {
+  font-size: 20px;
+}
+
+/* اسم الزر الوسطي */
+.nav-fab span {
+  display: none;
+}
+
+/* ════════════════════════════════════════════════
+   ■ الوضع الليلي — بطاقات الطلاب
+   ════════════════════════════════════════════════ */
+[data-theme="dark"] .student-card {
+  background: var(--color-surface);
+  border-color: var(--color-border);
+}
+
+[data-theme="dark"] .student-card:hover {
+  border-color: var(--color-primary-light);
+}
+
+[data-theme="dark"] .card-footer {
+  background: var(--color-surface-2);
+  border-color: var(--color-border);
+}
+
+[data-theme="dark"] .setting-item:hover {
+  background: var(--color-surface-2);
+}
+
+[data-theme="dark"] .quick-action-btn {
+  background: var(--color-surface);
+  border-color: var(--color-border);
+}
+
+[data-theme="dark"] .quick-action-btn:hover {
+  background: var(--color-surface-2);
+}
+
+[data-theme="dark"] .attendance-date-badge {
+  background: var(--color-surface-2);
+  border-color: var(--color-border);
+}
+
+[data-theme="dark"] .alert-absent {
+  background: rgba(239, 83, 80, .12);
+  border-color: rgba(239, 83, 80, .25);
+}
+
+/* ════════════════════════════════════════════════
+   ■ اسم الطالب في الجدول - رابط
+   ════════════════════════════════════════════════ */
+.student-name-link {
+  color: var(--color-primary);
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color var(--transition);
+}
+
+.student-name-link:hover {
+  color: var(--color-primary-light);
+  text-decoration: underline;
+}
+
+[data-theme="dark"] .student-name-link {
+  color: var(--color-primary-light);
+}
+
+/* ════════════════════════════════════════════════
+   ■ اسم قيمة بطاقة الـ Dashboard (طويل)
+   ════════════════════════════════════════════════ */
+.dash-card-name {
+  font-size: clamp(13px, 2vw, 17px) !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
