@@ -18,10 +18,10 @@
   <link rel="shortcut icon" href="icon-512.png">
   <link rel="apple-touch-icon" href="icon-512.png">
 
-  <!-- Google Fonts - Cairo -->
+  <!-- Google Fonts - Tajawal + Cairo -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
   <!-- Font Awesome 6 -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -135,6 +135,9 @@
       <button class="btn-header" id="btn-import" title="استيراد نسخة احتياطية (JSON)">
         <i class="fas fa-upload"></i>
         <span>استيراد</span>
+      </button>
+      <button class="btn-dark-mode" id="btn-dark-mode" title="تفعيل الوضع الليلي" aria-label="تبديل الوضع الليلي">
+        <i class="fas fa-moon"></i>
       </button>
     </div>
   </header>
@@ -611,6 +614,7 @@
   <input type="file" id="import-file" accept=".json">
 
   <!-- ═══════════════ JavaScript Files ═══════════════ -->
+  <script src="js/darkmode.js"></script>
   <script src="js/constants.js"></script>
   <script src="js/db.js"></script>
   <script src="js/ui.js"></script>
