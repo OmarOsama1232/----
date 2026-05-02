@@ -26,10 +26,10 @@ com.halqatna.app-lifecycle-livedata-core-2.6.1-24 C:\Users\Omar Osama\.gradle\ca
 com.halqatna.app-material-1.11.0-25 C:\Users\Omar Osama\.gradle\caches\8.14.3\transforms\e903485c17e146109390310bf7a4ea03\transformed\material-1.11.0\res
 com.halqatna.app-jetified-savedstate-1.2.1-26 C:\Users\Omar Osama\.gradle\caches\8.14.3\transforms\f428dcb26946c0894d57b69230b0748f\transformed\jetified-savedstate-1.2.1\res
 com.halqatna.app-jetified-core-ktx-1.9.0-27 C:\Users\Omar Osama\.gradle\caches\8.14.3\transforms\f8034a6af0f58d5ac1916fabe1d48e54\transformed\jetified-core-ktx-1.9.0\res
-com.halqatna.app-pngs-28 C:\Users\Omar Osama\Downloads\حلقة\android\app\build\generated\res\pngs\release
-com.halqatna.app-resValues-29 C:\Users\Omar Osama\Downloads\حلقة\android\app\build\generated\res\resValues\release
-com.halqatna.app-packageReleaseResources-30 C:\Users\Omar Osama\Downloads\حلقة\android\app\build\intermediates\incremental\release\packageReleaseResources\merged.dir
-com.halqatna.app-packageReleaseResources-31 C:\Users\Omar Osama\Downloads\حلقة\android\app\build\intermediates\incremental\release\packageReleaseResources\stripped.dir
-com.halqatna.app-merged_res-32 C:\Users\Omar Osama\Downloads\حلقة\android\app\build\intermediates\merged_res\release
-com.halqatna.app-main-33 C:\Users\Omar Osama\Downloads\حلقة\android\app\src\main\res
-com.halqatna.app-release-34 C:\Users\Omar Osama\Downloads\حلقة\android\app\src\release\res
+com.halqatna.app-pngs-28 C:\Users\Omar Osama\Downloads\Halqatna-AndroidStudio\app\build\generated\res\pngs\release
+com.halqatna.app-resValues-29 C:\Users\Omar Osama\Downloads\Halqatna-AndroidStudio\app\build\generated\res\resValues\release
+com.halqatna.app-packageReleaseResources-30 C:\Users\Omar Osama\Downloads\Halqatna-AndroidStudio\app\build\intermediates\incremental\release\packageReleaseResources\merged.dir
+com.halqatna.app-packageReleaseResources-31 C:\Users\Omar Osama\Downloads\Halqatna-AndroidStudio\app\build\intermediates\incremental\release\packageReleaseResources\stripped.dir
+com.halqatna.app-merged_res-32 C:\Users\Omar Osama\Downloads\Halqatna-AndroidStudio\app\build\intermediates\merged_res\release
+com.halqatna.app-main-33 C:\Users\Omar Osama\Downloads\Halqatna-AndroidStudio\app\src\main\res
+com.halqatna.app-release-34 C:\Users\Omar Osama\Downloads\Halqatna-AndroidStudio\app\src\release\res

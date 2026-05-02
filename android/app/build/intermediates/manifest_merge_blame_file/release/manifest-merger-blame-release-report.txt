@@ -9,23 +9,23 @@
 9        android:targetSdkVersion="34" />
 10
 11    <uses-permission android:name="android.permission.INTERNET" />
-11-->C:\Users\Omar Osama\Downloads\حلقة\android\app\src\main\AndroidManifest.xml:4:5-67
-11-->C:\Users\Omar Osama\Downloads\حلقة\android\app\src\main\AndroidManifest.xml:4:22-64
+11-->C:\Users\Omar Osama\Downloads\Halqatna-AndroidStudio\app\src\main\AndroidManifest.xml:4:5-67
+11-->C:\Users\Omar Osama\Downloads\Halqatna-AndroidStudio\app\src\main\AndroidManifest.xml:4:22-64
 12    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-12-->C:\Users\Omar Osama\Downloads\حلقة\android\app\src\main\AndroidManifest.xml:5:5-81
-12-->C:\Users\Omar Osama\Downloads\حلقة\android\app\src\main\AndroidManifest.xml:5:22-78
+12-->C:\Users\Omar Osama\Downloads\Halqatna-AndroidStudio\app\src\main\AndroidManifest.xml:5:5-81
+12-->C:\Users\Omar Osama\Downloads\Halqatna-AndroidStudio\app\src\main\AndroidManifest.xml:5:22-78
 13    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-13-->C:\Users\Omar Osama\Downloads\حلقة\android\app\src\main\AndroidManifest.xml:6:5-79
-13-->C:\Users\Omar Osama\Downloads\حلقة\android\app\src\main\AndroidManifest.xml:6:22-76
+13-->C:\Users\Omar Osama\Downloads\Halqatna-AndroidStudio\app\src\main\AndroidManifest.xml:6:5-79
+13-->C:\Users\Omar Osama\Downloads\Halqatna-AndroidStudio\app\src\main\AndroidManifest.xml:6:22-76
 14    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
-14-->C:\Users\Omar Osama\Downloads\حلقة\android\app\src\main\AndroidManifest.xml:7:5-81
-14-->C:\Users\Omar Osama\Downloads\حلقة\android\app\src\main\AndroidManifest.xml:7:22-78
+14-->C:\Users\Omar Osama\Downloads\Halqatna-AndroidStudio\app\src\main\AndroidManifest.xml:7:5-81
+14-->C:\Users\Omar Osama\Downloads\Halqatna-AndroidStudio\app\src\main\AndroidManifest.xml:7:22-78
 15    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-15-->C:\Users\Omar Osama\Downloads\حلقة\android\app\src\main\AndroidManifest.xml:8:5-77
-15-->C:\Users\Omar Osama\Downloads\حلقة\android\app\src\main\AndroidManifest.xml:8:22-74
+15-->C:\Users\Omar Osama\Downloads\Halqatna-AndroidStudio\app\src\main\AndroidManifest.xml:8:5-77
+15-->C:\Users\Omar Osama\Downloads\Halqatna-AndroidStudio\app\src\main\AndroidManifest.xml:8:22-74
 16    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
-16-->C:\Users\Omar Osama\Downloads\حلقة\android\app\src\main\AndroidManifest.xml:9:5-79
-16-->C:\Users\Omar Osama\Downloads\حلقة\android\app\src\main\AndroidManifest.xml:9:22-76
+16-->C:\Users\Omar Osama\Downloads\Halqatna-AndroidStudio\app\src\main\AndroidManifest.xml:9:5-79
+16-->C:\Users\Omar Osama\Downloads\Halqatna-AndroidStudio\app\src\main\AndroidManifest.xml:9:22-76
 17
 18    <permission
 18-->[androidx.core:core:1.9.0] C:\Users\Omar Osama\.gradle\caches\8.14.3\transforms\16ac0685be902862e945fa6a022ff3e7\transformed\core-1.9.0\AndroidManifest.xml:22:5-24:47
@@ -39,77 +39,77 @@
 22-->[androidx.core:core:1.9.0] C:\Users\Omar Osama\.gradle\caches\8.14.3\transforms\16ac0685be902862e945fa6a022ff3e7\transformed\core-1.9.0\AndroidManifest.xml:26:22-94
 23
 24    <application
-24-->C:\Users\Omar Osama\Downloads\حلقة\android\app\src\main\AndroidManifest.xml:11:5-48:19
+24-->C:\Users\Omar Osama\Downloads\Halqatna-AndroidStudio\app\src\main\AndroidManifest.xml:11:5-48:19
 25        android:allowBackup="true"
-25-->C:\Users\Omar Osama\Downloads\حلقة\android\app\src\main\AndroidManifest.xml:12:9-35
+25-->C:\Users\Omar Osama\Downloads\Halqatna-AndroidStudio\app\src\main\AndroidManifest.xml:12:9-35
 26        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
 26-->[androidx.core:core:1.9.0] C:\Users\Omar Osama\.gradle\caches\8.14.3\transforms\16ac0685be902862e945fa6a022ff3e7\transformed\core-1.9.0\AndroidManifest.xml:28:18-86
 27        android:extractNativeLibs="false"
-28        android:icon="@android:drawable/sym_def_app_icon"
-28-->C:\Users\Omar Osama\Downloads\حلقة\android\app\src\main\AndroidManifest.xml:13:9-58
+28        android:icon="@mipmap/ic_launcher"
+28-->C:\Users\Omar Osama\Downloads\Halqatna-AndroidStudio\app\src\main\AndroidManifest.xml:13:9-43
 29        android:label="@string/app_name"
-29-->C:\Users\Omar Osama\Downloads\حلقة\android\app\src\main\AndroidManifest.xml:14:9-41
-30        android:roundIcon="@android:drawable/sym_def_app_icon"
-30-->C:\Users\Omar Osama\Downloads\حلقة\android\app\src\main\AndroidManifest.xml:15:9-63
+29-->C:\Users\Omar Osama\Downloads\Halqatna-AndroidStudio\app\src\main\AndroidManifest.xml:14:9-41
+30        android:roundIcon="@mipmap/ic_launcher_round"
+30-->C:\Users\Omar Osama\Downloads\Halqatna-AndroidStudio\app\src\main\AndroidManifest.xml:15:9-54
 31        android:supportsRtl="true"
-31-->C:\Users\Omar Osama\Downloads\حلقة\android\app\src\main\AndroidManifest.xml:16:9-35
+31-->C:\Users\Omar Osama\Downloads\Halqatna-AndroidStudio\app\src\main\AndroidManifest.xml:16:9-35
 32        android:theme="@style/Theme.Halqatna"
-32-->C:\Users\Omar Osama\Downloads\حلقة\android\app\src\main\AndroidManifest.xml:17:9-46
+32-->C:\Users\Omar Osama\Downloads\Halqatna-AndroidStudio\app\src\main\AndroidManifest.xml:17:9-46
 33        android:usesCleartextTraffic="true" >
-33-->C:\Users\Omar Osama\Downloads\حلقة\android\app\src\main\AndroidManifest.xml:18:9-44
+33-->C:\Users\Omar Osama\Downloads\Halqatna-AndroidStudio\app\src\main\AndroidManifest.xml:18:9-44
 34        <activity
-34-->C:\Users\Omar Osama\Downloads\حلقة\android\app\src\main\AndroidManifest.xml:19:9-28:20
+34-->C:\Users\Omar Osama\Downloads\Halqatna-AndroidStudio\app\src\main\AndroidManifest.xml:19:9-28:20
 35            android:name="com.halqatna.app.MainActivity"
-35-->C:\Users\Omar Osama\Downloads\حلقة\android\app\src\main\AndroidManifest.xml:20:13-41
+35-->C:\Users\Omar Osama\Downloads\Halqatna-AndroidStudio\app\src\main\AndroidManifest.xml:20:13-41
 36            android:configChanges="orientation|keyboardHidden|screenSize"
-36-->C:\Users\Omar Osama\Downloads\حلقة\android\app\src\main\AndroidManifest.xml:22:13-74
+36-->C:\Users\Omar Osama\Downloads\Halqatna-AndroidStudio\app\src\main\AndroidManifest.xml:22:13-74
 37            android:exported="true"
-37-->C:\Users\Omar Osama\Downloads\حلقة\android\app\src\main\AndroidManifest.xml:21:13-36
+37-->C:\Users\Omar Osama\Downloads\Halqatna-AndroidStudio\app\src\main\AndroidManifest.xml:21:13-36
 38            android:theme="@style/Theme.Halqatna.NoActionBar" >
-38-->C:\Users\Omar Osama\Downloads\حلقة\android\app\src\main\AndroidManifest.xml:23:13-62
+38-->C:\Users\Omar Osama\Downloads\Halqatna-AndroidStudio\app\src\main\AndroidManifest.xml:23:13-62
 39            <intent-filter>
-39-->C:\Users\Omar Osama\Downloads\حلقة\android\app\src\main\AndroidManifest.xml:24:13-27:29
+39-->C:\Users\Omar Osama\Downloads\Halqatna-AndroidStudio\app\src\main\AndroidManifest.xml:24:13-27:29
 40                <action android:name="android.intent.action.MAIN" />
-40-->C:\Users\Omar Osama\Downloads\حلقة\android\app\src\main\AndroidManifest.xml:25:17-69
-40-->C:\Users\Omar Osama\Downloads\حلقة\android\app\src\main\AndroidManifest.xml:25:25-66
+40-->C:\Users\Omar Osama\Downloads\Halqatna-AndroidStudio\app\src\main\AndroidManifest.xml:25:17-69
+40-->C:\Users\Omar Osama\Downloads\Halqatna-AndroidStudio\app\src\main\AndroidManifest.xml:25:25-66
 41
 42                <category android:name="android.intent.category.LAUNCHER" />
-42-->C:\Users\Omar Osama\Downloads\حلقة\android\app\src\main\AndroidManifest.xml:26:17-77
-42-->C:\Users\Omar Osama\Downloads\حلقة\android\app\src\main\AndroidManifest.xml:26:27-74
+42-->C:\Users\Omar Osama\Downloads\Halqatna-AndroidStudio\app\src\main\AndroidManifest.xml:26:17-77
+42-->C:\Users\Omar Osama\Downloads\Halqatna-AndroidStudio\app\src\main\AndroidManifest.xml:26:27-74
 43            </intent-filter>
 44        </activity>
 45
 46        <receiver
-46-->C:\Users\Omar Osama\Downloads\حلقة\android\app\src\main\AndroidManifest.xml:30:9-32:40
+46-->C:\Users\Omar Osama\Downloads\Halqatna-AndroidStudio\app\src\main\AndroidManifest.xml:30:9-32:40
 47            android:name="com.halqatna.app.PrayerAlarmReceiver"
-47-->C:\Users\Omar Osama\Downloads\حلقة\android\app\src\main\AndroidManifest.xml:31:13-48
+47-->C:\Users\Omar Osama\Downloads\Halqatna-AndroidStudio\app\src\main\AndroidManifest.xml:31:13-48
 48            android:exported="false" />
-48-->C:\Users\Omar Osama\Downloads\حلقة\android\app\src\main\AndroidManifest.xml:32:13-37
+48-->C:\Users\Omar Osama\Downloads\Halqatna-AndroidStudio\app\src\main\AndroidManifest.xml:32:13-37
 49        <receiver
-49-->C:\Users\Omar Osama\Downloads\حلقة\android\app\src\main\AndroidManifest.xml:34:9-36:40
+49-->C:\Users\Omar Osama\Downloads\Halqatna-AndroidStudio\app\src\main\AndroidManifest.xml:34:9-36:40
 50            android:name="com.halqatna.app.PrayerResyncReceiver"
-50-->C:\Users\Omar Osama\Downloads\حلقة\android\app\src\main\AndroidManifest.xml:35:13-49
+50-->C:\Users\Omar Osama\Downloads\Halqatna-AndroidStudio\app\src\main\AndroidManifest.xml:35:13-49
 51            android:exported="false" />
-51-->C:\Users\Omar Osama\Downloads\حلقة\android\app\src\main\AndroidManifest.xml:36:13-37
+51-->C:\Users\Omar Osama\Downloads\Halqatna-AndroidStudio\app\src\main\AndroidManifest.xml:36:13-37
 52        <receiver
-52-->C:\Users\Omar Osama\Downloads\حلقة\android\app\src\main\AndroidManifest.xml:38:9-47:20
+52-->C:\Users\Omar Osama\Downloads\Halqatna-AndroidStudio\app\src\main\AndroidManifest.xml:38:9-47:20
 53            android:name="com.halqatna.app.PrayerBootReceiver"
-53-->C:\Users\Omar Osama\Downloads\حلقة\android\app\src\main\AndroidManifest.xml:39:13-47
+53-->C:\Users\Omar Osama\Downloads\Halqatna-AndroidStudio\app\src\main\AndroidManifest.xml:39:13-47
 54            android:enabled="true"
-54-->C:\Users\Omar Osama\Downloads\حلقة\android\app\src\main\AndroidManifest.xml:40:13-35
+54-->C:\Users\Omar Osama\Downloads\Halqatna-AndroidStudio\app\src\main\AndroidManifest.xml:40:13-35
 55            android:exported="true" >
-55-->C:\Users\Omar Osama\Downloads\حلقة\android\app\src\main\AndroidManifest.xml:41:13-36
+55-->C:\Users\Omar Osama\Downloads\Halqatna-AndroidStudio\app\src\main\AndroidManifest.xml:41:13-36
 56            <intent-filter>
-56-->C:\Users\Omar Osama\Downloads\حلقة\android\app\src\main\AndroidManifest.xml:42:13-46:29
+56-->C:\Users\Omar Osama\Downloads\Halqatna-AndroidStudio\app\src\main\AndroidManifest.xml:42:13-46:29
 57                <action android:name="android.intent.action.BOOT_COMPLETED" />
-57-->C:\Users\Omar Osama\Downloads\حلقة\android\app\src\main\AndroidManifest.xml:43:17-79
-57-->C:\Users\Omar Osama\Downloads\حلقة\android\app\src\main\AndroidManifest.xml:43:25-76
+57-->C:\Users\Omar Osama\Downloads\Halqatna-AndroidStudio\app\src\main\AndroidManifest.xml:43:17-79
+57-->C:\Users\Omar Osama\Downloads\Halqatna-AndroidStudio\app\src\main\AndroidManifest.xml:43:25-76
 58                <action android:name="android.intent.action.TIME_SET" />
-58-->C:\Users\Omar Osama\Downloads\حلقة\android\app\src\main\AndroidManifest.xml:44:17-73
-58-->C:\Users\Omar Osama\Downloads\حلقة\android\app\src\main\AndroidManifest.xml:44:25-70
+58-->C:\Users\Omar Osama\Downloads\Halqatna-AndroidStudio\app\src\main\AndroidManifest.xml:44:17-73
+58-->C:\Users\Omar Osama\Downloads\Halqatna-AndroidStudio\app\src\main\AndroidManifest.xml:44:25-70
 59                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
-59-->C:\Users\Omar Osama\Downloads\حلقة\android\app\src\main\AndroidManifest.xml:45:17-81
-59-->C:\Users\Omar Osama\Downloads\حلقة\android\app\src\main\AndroidManifest.xml:45:25-78
+59-->C:\Users\Omar Osama\Downloads\Halqatna-AndroidStudio\app\src\main\AndroidManifest.xml:45:17-81
+59-->C:\Users\Omar Osama\Downloads\Halqatna-AndroidStudio\app\src\main\AndroidManifest.xml:45:25-78
 60            </intent-filter>
 61        </receiver>
 62

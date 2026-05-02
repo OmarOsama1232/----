@@ -22,6 +22,7 @@ public class PrayerAlarmReceiver extends BroadcastReceiver {
                 context,
                 notificationId,
                 new Intent(context, MainActivity.class)
+                        .putExtra("launchAction", "open_prayer")
                         .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP),
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
         );

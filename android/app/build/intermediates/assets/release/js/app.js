@@ -1,164 +1,85 @@
 /**
  * app.js
  * نقطة الدخول الرئيسية للتطبيق
- * - تهيئة التطبيق عند تحميل الصفحة
- * - ربط جميع الأحداث (Event Listeners)
- * - دوال التصدير والاستيراد
- * - إدارة البيانات التجريبية
- * - PWA / Service Worker / Offline
- * - Bottom Navigation / Long Press / Swipe
+ * - تهيئة التطبيق
+ * - ربط الأحداث
+ * - FIX 4: التصدير باللقطة (PDF / Print / PNG)
+ * - PWA / Offline / Navigation
  */
 
-// ═══════════════════════════════════
-// ■ تهيئة التطبيق
-// ═══════════════════════════════════
-
-document.addEventListener('DOMContentLoaded', function () {
-  // 1. تهيئة LocalStorage
+document.addEventListener('DOMContentLoaded', () => {
   initializeStorage();
-
-  // 2. عرض التاريخ الحالي
   updateDateDisplay();
-
-  // 3. رسم جدول الطلاب
   renderStudentsTable();
-
-  // 4. بطاقات الإحصائيات
   updateDashboardCards();
-
-  // 5. التقارير الأسبوعية
   renderWeeklyReport();
-
-  // 6. ربط الأحداث
   setupEventListeners();
-
-  // 7. البحث والتصفية
   setupSearchAndFilter();
 
-  // 8. فترة لوحة التحكم
   const periodSelect = document.getElementById('dashboard-period-select');
-  if (periodSelect) periodSelect.addEventListener('change', updateDashboardCards);
+  if (periodSelect) {
+    periodSelect.addEventListener('change', updateDashboardCards);
+  }
 
-  // 9. حالة البيانات التجريبية
   updateMockDataStatus();
-
-  // 10. تسجيل Service Worker
+  updateStorageStatusCard?.();
   registerServiceWorker();
-
-  // 11. كشف الاتصال بالإنترنت
   setupOfflineDetection();
-
-  // 12. شريط التنقل السفلي
   setupBottomNavigation();
-
-  // 13. Long Press Context Menu
   setupLongPressMenu();
-
-  // 14. Swipe to refresh
   setupSwipeToRefresh();
-
-  // 15. إضافة data-label للجدول (للعرض كبطاقات على الموبايل)
   injectTableDataLabels();
 
-  // 16. مواقيت الصلاة
   if (typeof initPrayerTimes === 'function') initPrayerTimes();
-
-  // 17. زر الرجوع (Android)
+  if (typeof initQiblaCompass === 'function') initQiblaCompass();
   if (typeof initBackButton === 'function') initBackButton();
 });
 
-// ═══════════════════════════════════
+// ═══════════════════════════════════════════════════════════
 // ■ ربط الأحداث
-// ═══════════════════════════════════
+// ═══════════════════════════════════════════════════════════
 
 function setupEventListeners() {
-  // زر إضافة طالب جديد
-  const addBtn = document.getElementById('btn-add-student');
-  if (addBtn) addBtn.addEventListener('click', openAddStudentModal);
+  document.getElementById('btn-add-student')?.addEventListener('click', openAddStudentModal);
+  document.getElementById('btn-save-new-student')?.addEventListener('click', saveNewStudent);
+  document.getElementById('btn-cancel-new-student')?.addEventListener('click', () => closeModal('modal-add-student'));
+  document.getElementById('btn-save-edit-student')?.addEventListener('click', saveEditStudent);
+  document.getElementById('btn-cancel-edit-student')?.addEventListener('click', () => closeModal('modal-edit-student'));
+  document.getElementById('btn-save-attendance')?.addEventListener('click', saveAllAttendance);
+  document.getElementById('btn-export')?.addEventListener('click', handleExport);
+  document.getElementById('btn-export-image')?.addEventListener('click', downloadCurrentReportImage);
+  document.getElementById('btn-export-pdf')?.addEventListener('click', exportCurrentReportAsPdf);
+  document.getElementById('btn-print-report')?.addEventListener('click', printCurrentReport);
+  document.getElementById('btn-import')?.addEventListener('click', () => document.getElementById('import-file')?.click());
+  document.getElementById('import-file')?.addEventListener('change', handleImport);
+  document.getElementById('btn-close-chart')?.addEventListener('click', () => closeModal('modal-chart'));
+  document.getElementById('btn-generate-mock')?.addEventListener('click', handleGenerateMock);
+  document.getElementById('btn-delete-mock')?.addEventListener('click', handleDeleteMock);
 
-  // زر حفظ الطالب الجديد من الـ Modal
-  const saveNewBtn = document.getElementById('btn-save-new-student');
-  if (saveNewBtn) saveNewBtn.addEventListener('click', saveNewStudent);
-
-  // زر إلغاء إضافة طالب
-  const cancelNewBtn = document.getElementById('btn-cancel-new-student');
-  if (cancelNewBtn) cancelNewBtn.addEventListener('click', () => closeModal('modal-add-student'));
-
-  // إدخال Enter في حقل الاسم الجديد
-  const newNameInput = document.getElementById('new-student-name');
-  if (newNameInput) {
-    newNameInput.addEventListener('keypress', e => { if (e.key === 'Enter') saveNewStudent(); });
-  }
-
-  // زر حفظ تعديل الاسم
-  const saveEditBtn = document.getElementById('btn-save-edit-student');
-  if (saveEditBtn) saveEditBtn.addEventListener('click', saveEditStudent);
-
-  // زر إلغاء تعديل الاسم
-  const cancelEditBtn = document.getElementById('btn-cancel-edit-student');
-  if (cancelEditBtn) cancelEditBtn.addEventListener('click', () => closeModal('modal-edit-student'));
-
-  // إدخال Enter في حقل تعديل الاسم
-  const editNameInput = document.getElementById('edit-student-name');
-  if (editNameInput) {
-    editNameInput.addEventListener('keypress', e => { if (e.key === 'Enter') saveEditStudent(); });
-  }
-
-  // زر تسجيل الحضور والتقييمات
-  const saveAttendanceBtn = document.getElementById('btn-save-attendance');
-  if (saveAttendanceBtn) saveAttendanceBtn.addEventListener('click', saveAllAttendance);
-
-  // زر تصدير البيانات (نسخة احتياطية)
-  const exportBtn = document.getElementById('btn-export');
-  if (exportBtn) exportBtn.addEventListener('click', handleExport);
-
-  // زر تصدير Excel
-  const exportExcelBtn = document.getElementById('btn-export-excel');
-  if (exportExcelBtn) exportExcelBtn.addEventListener('click', exportToExcel);
-
-  // زر تصدير PDF
-  const exportPdfBtn = document.getElementById('btn-export-pdf');
-  if (exportPdfBtn) exportPdfBtn.addEventListener('click', exportToPDF);
-
-  // زر استيراد البيانات
-  const importBtn = document.getElementById('btn-import');
-  if (importBtn) importBtn.addEventListener('click', () => document.getElementById('import-file').click());
-
-  // مستمع تغيير ملف الاستيراد
-  const importFile = document.getElementById('import-file');
-  if (importFile) importFile.addEventListener('change', handleImport);
-
-  // إغلاق الـ Modals عند الضغط على الخلفية
-  document.querySelectorAll('.modal-overlay').forEach(modal => {
-    modal.addEventListener('click', e => closeModalOnBackdrop(e, modal.id));
+  document.querySelectorAll('.modal-overlay').forEach((modal) => {
+    modal.addEventListener('click', (event) => closeModalOnBackdrop(event, modal.id));
   });
 
-  // زر إغلاق Modal الرسم البياني
-  const closeChartBtn = document.getElementById('btn-close-chart');
-  if (closeChartBtn) closeChartBtn.addEventListener('click', () => closeModal('modal-chart'));
+  document.getElementById('new-student-name')?.addEventListener('keypress', (event) => {
+    if (event.key === 'Enter') saveNewStudent();
+  });
 
-  // ═══ أزرار البيانات التجريبية ═══
-  const genMockBtn = document.getElementById('btn-generate-mock');
-  if (genMockBtn) genMockBtn.addEventListener('click', handleGenerateMock);
-
-  const delMockBtn = document.getElementById('btn-delete-mock');
-  if (delMockBtn) delMockBtn.addEventListener('click', handleDeleteMock);
+  document.getElementById('edit-student-name')?.addEventListener('keypress', (event) => {
+    if (event.key === 'Enter') saveEditStudent();
+  });
 }
 
-// ═══════════════════════════════════
+// ═══════════════════════════════════════════════════════════
 // ■ البيانات التجريبية
-// ═══════════════════════════════════
+// ═══════════════════════════════════════════════════════════
 
 async function handleGenerateMock() {
   const students = getAllStudents();
-
-  // حالة الحافة: لا يوجد طلاب
   if (students.length === 0) {
     showToast('لا يوجد طلاب لإضافة بيانات تجريبية لهم. أضف طلاباً أولاً.', 'warning');
     return;
   }
 
-  // حالة الحافة: بيانات تجريبية موجودة
   if (hasMockData()) {
     showToast('توجد بيانات تجريبية بالفعل! احذف القديمة أولاً قبل إنشاء بيانات جديدة.', 'warning');
     return;
@@ -173,22 +94,21 @@ async function handleGenerateMock() {
 
   showToast('جاري إنشاء البيانات التجريبية...', 'success');
 
-  // تأخير بسيط لعرض الرسالة قبل العملية الثقيلة
   setTimeout(() => {
     const result = generateMockData();
-
     if (result.success) {
       showToast(`تم إنشاء ${result.recordsAdded} سجل تجريبي لـ ${result.studentsCount} طالب`);
-      renderStudentsTable();
-      updateDashboardCards();
-      renderWeeklyReport();
+      refreshMainViews();
       updateMockDataStatus();
-    } else if (result.reason === 'no_students') {
+      return;
+    }
+
+    if (result.reason === 'no_students') {
       showToast('لا يوجد طلاب!', 'error');
     } else if (result.reason === 'already_exists') {
       showToast('بيانات تجريبية موجودة مسبقاً!', 'warning');
     }
-  }, 100);
+  }, 120);
 }
 
 async function handleDeleteMock() {
@@ -205,12 +125,9 @@ async function handleDeleteMock() {
   if (!confirmed) return;
 
   const result = deleteMockData();
-
   if (result.success) {
     showToast(`تم حذف ${result.recordsRemoved} سجل تجريبي. البيانات الحقيقية (${result.realRecordsKept} سجل) سليمة.`);
-    renderStudentsTable();
-    updateDashboardCards();
-    renderWeeklyReport();
+    refreshMainViews();
     updateMockDataStatus();
   }
 }
@@ -222,7 +139,7 @@ function updateMockDataStatus() {
 
   if (hasMockData()) {
     const records = getDailyRecords();
-    const mockCount = records.filter(r => r._mock === '__mock__').length;
+    const mockCount = records.filter((record) => record._mock === '__mock__').length;
     const realCount = records.length - mockCount;
     card.style.display = 'flex';
     text.textContent = `توجد ${mockCount} سجل تجريبي و ${realCount} سجل حقيقي`;
@@ -231,18 +148,173 @@ function updateMockDataStatus() {
   }
 }
 
-// ═══════════════════════════════════
-// ■ التصدير
-// ═══════════════════════════════════
+// ═══════════════════════════════════════════════════════════
+// ■ FIX 4: التصدير باللقطة
+// ═══════════════════════════════════════════════════════════
+
+function showExportOverlay(message = 'جاري إنشاء التقرير...') {
+  const overlay = document.getElementById('export-loading-overlay');
+  const text = document.getElementById('export-loading-text');
+  if (!overlay || !text) return;
+
+  text.textContent = message;
+  overlay.classList.add('active');
+}
+
+function hideExportOverlay() {
+  const overlay = document.getElementById('export-loading-overlay');
+  if (!overlay) return;
+  overlay.classList.remove('active');
+}
+
+async function captureElementAsCanvas(element, message = 'جاري إنشاء التقرير...') {
+  if (!element) {
+    throw new Error('No element provided for capture.');
+  }
+
+  if (typeof html2canvas === 'undefined') {
+    throw new Error('html2canvas is not available.');
+  }
+
+  showExportOverlay(message);
+
+  try {
+    await new Promise((resolve) => setTimeout(resolve, 80));
+    return await html2canvas(element, {
+      scale: 2.5,
+      useCORS: true,
+      backgroundColor: '#ffffff',
+      windowWidth: document.documentElement.scrollWidth,
+      scrollY: -window.scrollY
+    });
+  } finally {
+    hideExportOverlay();
+  }
+}
+
+function downloadDataUrl(dataUrl, filename) {
+  const link = document.createElement('a');
+  link.href = dataUrl;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+async function exportCanvasToPdf(canvas, filename) {
+  if (!window.jspdf?.jsPDF) {
+    throw new Error('jsPDF is not available.');
+  }
+
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF('p', 'mm', 'a4');
+  const pageWidth = pdf.internal.pageSize.getWidth();
+  const pageHeight = pdf.internal.pageSize.getHeight();
+  const margin = 8;
+  const imageWidth = pageWidth - (margin * 2);
+  const imageHeight = (canvas.height * imageWidth) / canvas.width;
+  const imageData = canvas.toDataURL('image/png', 1.0);
+
+  let remainingHeight = imageHeight;
+  let positionY = margin;
+
+  pdf.addImage(imageData, 'PNG', margin, positionY, imageWidth, imageHeight, undefined, 'FAST');
+  remainingHeight -= (pageHeight - margin * 2);
+
+  while (remainingHeight > 0) {
+    positionY = remainingHeight - imageHeight + margin;
+    pdf.addPage();
+    pdf.addImage(imageData, 'PNG', margin, positionY, imageWidth, imageHeight, undefined, 'FAST');
+    remainingHeight -= (pageHeight - margin * 2);
+  }
+
+  pdf.save(filename);
+}
+
+function printCanvasImage(canvas, title) {
+  const printWindow = window.open('', '_blank', 'width=900,height=1200');
+  if (!printWindow) {
+    throw new Error('تعذر فتح نافذة الطباعة.');
+  }
+
+  const imageData = canvas.toDataURL('image/png', 1.0);
+  printWindow.document.write(`
+    <!DOCTYPE html>
+    <html lang="ar" dir="rtl">
+    <head>
+      <meta charset="UTF-8">
+      <title>${title}</title>
+      <style>
+        body { margin: 0; padding: 16px; background: #fff; font-family: Cairo, sans-serif; }
+        img { width: 100%; height: auto; display: block; }
+      </style>
+    </head>
+    <body>
+      <img src="${imageData}" alt="${title}">
+      <script>
+        window.onload = function () {
+          setTimeout(function () {
+            window.print();
+          }, 200);
+        };
+      </script>
+    </body>
+    </html>
+  `);
+  printWindow.document.close();
+}
+
+function getMainReportElement() {
+  return document.getElementById('main-table-wrapper');
+}
+
+async function downloadCurrentReportImage() {
+  try {
+    const canvas = await captureElementAsCanvas(getMainReportElement(), 'جاري تجهيز صورة التقرير...');
+    downloadDataUrl(canvas.toDataURL('image/png', 1.0), `حلقتنا-report-${getTodayDate()}.png`);
+    showToast('تم تحميل التقرير كصورة PNG');
+  } catch (error) {
+    console.error(error);
+    showToast('حدث خطأ أثناء إنشاء صورة التقرير', 'error');
+  }
+}
+
+async function exportCurrentReportAsPdf() {
+  try {
+    const canvas = await captureElementAsCanvas(getMainReportElement(), 'جاري إنشاء ملف PDF...');
+    await exportCanvasToPdf(canvas, `حلقتنا-report-${getTodayDate()}.pdf`);
+    showToast('تم إنشاء ملف PDF بنجاح');
+  } catch (error) {
+    console.error(error);
+    showToast('حدث خطأ أثناء إنشاء ملف PDF', 'error');
+  }
+}
+
+async function printCurrentReport() {
+  try {
+    const canvas = await captureElementAsCanvas(getMainReportElement(), 'جاري تجهيز التقرير للطباعة...');
+    printCanvasImage(canvas, 'تقرير حلقتنا');
+    showToast('تم تجهيز التقرير للطباعة');
+  } catch (error) {
+    console.error(error);
+    showToast('حدث خطأ أثناء تجهيز الطباعة', 'error');
+  }
+}
+
+// إبقاء الأسماء القديمة متوافقة مع أجزاء التطبيق السابقة.
+const exportToPDF = exportCurrentReportAsPdf;
+const exportToExcel = downloadCurrentReportImage;
+
+// ═══════════════════════════════════════════════════════════
+// ■ النسخة الاحتياطية والاستيراد
+// ═══════════════════════════════════════════════════════════
 
 function handleExport() {
   const data = exportAllData();
   const jsonString = JSON.stringify(data, null, 2);
   const blob = new Blob([jsonString], { type: 'application/json;charset=utf-8' });
   const url = URL.createObjectURL(blob);
-
-  const today = getTodayDate();
-  const filename = `حلقتنا-backup-${today}.json`;
+  const filename = `حلقتنا-backup-${getTodayDate()}.json`;
 
   const link = document.createElement('a');
   link.href = url;
@@ -255,90 +327,20 @@ function handleExport() {
   showToast(`تم تصدير البيانات بنجاح: ${filename}`);
 }
 
-function exportToExcel() {
-  if (typeof XLSX === 'undefined') {
-    showToast('المكتبة غير متوفرة، تحقق من الاتصال بالإنترنت', 'error');
-    return;
-  }
-
-  const students = getAllStudents();
-  const today = getTodayDate();
-  const todayRecords = getRecordsByDate(today);
-
-  const excelData = students.map((s, index) => {
-    const record = todayRecords.find(r => r.studentId === s.id);
-    return {
-      'م': index + 1,
-      'اسم الطالب': s.name,
-      'الحفظ الحالي': s.currentMemorization.surah + (s.currentMemorization.details ? ` - ${s.currentMemorization.details}` : ''),
-      'المراجعة': s.revision.surah + (s.revision.details ? ` - ${s.revision.details}` : ''),
-      'الأجزاء المحفوظة': s.partsMemorized,
-      'حضور اليوم': record && record.present ? 'حاضر' : 'غائب',
-      'التقييم': record ? record.rating : '-',
-      'ملاحظات اليوم': record ? (record.note || '') : ''
-    };
-  });
-
-  const ws = XLSX.utils.json_to_sheet(excelData);
-  if (!ws['!dir']) ws['!dir'] = 'rtl';
-
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "الطلاب");
-  XLSX.writeFile(wb, `تقرير_الطلاب_${today}.xlsx`);
-
-  showToast('تم تصدير ملف Excel بنجاح');
-}
-
-function exportToPDF() {
-  if (typeof html2canvas === 'undefined' || typeof window.jspdf === 'undefined') {
-    showToast('المكتبة غير متوفرة، تحقق من الاتصال بالإنترنت', 'error');
-    return;
-  }
-
-  showToast('جاري تحضير ملف PDF، يرجى الانتظار...', 'success');
-
-  const { jsPDF } = window.jspdf;
-  const pdf = new jsPDF('p', 'mm', 'a4');
-  const tableEl = document.getElementById('main-table-wrapper');
-
-  html2canvas(tableEl, { scale: 1.5, useCORS: true }).then(canvas => {
-    const imgData = canvas.toDataURL('image/png');
-    const pdfWidth = pdf.internal.pageSize.getWidth();
-    const margin = 10;
-    const renderWidth = pdfWidth - (margin * 2);
-    const pdfHeight = (canvas.height * renderWidth) / canvas.width;
-
-    pdf.text("تقرير حلقة تحفيظ القرآن - حلقتنا", pdfWidth / 2, 10, { align: "center" });
-    pdf.addImage(imgData, 'PNG', margin, 15, renderWidth, pdfHeight);
-
-    const today = getTodayDate();
-    pdf.save(`تقرير_${today}.pdf`);
-    showToast('تم إنشاء ملف PDF بنجاح');
-  }).catch(err => {
-    console.error(err);
-    showToast('حدث خطأ أثناء إنشاء PDF', 'error');
-  });
-}
-
-// ═══════════════════════════════════
-// ■ الاستيراد
-// ═══════════════════════════════════
-
-function handleImport(e) {
-  const file = e.target.files[0];
+function handleImport(event) {
+  const file = event.target.files?.[0];
   if (!file) return;
 
   if (!file.name.endsWith('.json')) {
     showToast('يرجى اختيار ملف JSON صالح', 'error');
-    e.target.value = '';
+    event.target.value = '';
     return;
   }
 
   const reader = new FileReader();
-  reader.onload = async function (event) {
+  reader.onload = async (loadEvent) => {
     try {
-      const data = JSON.parse(event.target.result);
-
+      const data = JSON.parse(loadEvent.target.result);
       if (!data.students || !data.dailyRecords) {
         showToast('الملف غير صالح: يجب أن يحتوي على students و dailyRecords', 'error');
         return;
@@ -349,41 +351,38 @@ function handleImport(e) {
         'تأكيد استيراد البيانات'
       );
 
-      if (confirmed) {
-        const success = importAllData(data);
-        if (success) {
-          showToast('تم استيراد البيانات بنجاح! جاري إعادة تحميل الصفحة...');
-          setTimeout(() => location.reload(), 1500);
-        } else {
-          showToast('حدث خطأ أثناء استيراد البيانات', 'error');
-        }
+      if (!confirmed) return;
+
+      const success = importAllData(data);
+      if (success) {
+        showToast('تم استيراد البيانات بنجاح! جاري إعادة تحميل الصفحة...');
+        setTimeout(() => location.reload(), 1200);
+      } else {
+        showToast('حدث خطأ أثناء استيراد البيانات', 'error');
       }
     } catch (error) {
+      console.error(error);
       showToast('خطأ في قراءة الملف: تأكد أنه ملف JSON صالح', 'error');
     }
   };
 
   reader.readAsText(file);
-  e.target.value = '';
+  event.target.value = '';
 }
 
-// ═══════════════════════════════════
-// ■ Service Worker
-// ═══════════════════════════════════
+// ═══════════════════════════════════════════════════════════
+// ■ Service Worker / Offline
+// ═══════════════════════════════════════════════════════════
 
 function registerServiceWorker() {
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js').then(reg => {
-      console.log('✅ Service Worker مسجل:', reg.scope);
-    }).catch(err => {
-      console.warn('⚠️ فشل تسجيل Service Worker:', err);
-    });
-  }
-}
+  if (!('serviceWorker' in navigator)) return;
 
-// ═══════════════════════════════════
-// ■ كشف الاتصال بالإنترنت
-// ═══════════════════════════════════
+  navigator.serviceWorker.register('./sw.js').then((registration) => {
+    console.log('Service Worker registered:', registration.scope);
+  }).catch((error) => {
+    console.warn('Service Worker registration failed:', error);
+  });
+}
 
 function setupOfflineDetection() {
   const banner = document.getElementById('offline-banner');
@@ -397,6 +396,7 @@ function setupOfflineDetection() {
     updateStatus();
     showToast('تم استعادة الاتصال بالإنترنت');
   });
+
   window.addEventListener('offline', () => {
     updateStatus();
     showToast('أنت تعمل بدون اتصال — البيانات المحلية متاحة', 'warning');
@@ -405,57 +405,44 @@ function setupOfflineDetection() {
   updateStatus();
 }
 
-// ═══════════════════════════════════
-// ■ شريط التنقل السفلي
-// ═══════════════════════════════════
+// ═══════════════════════════════════════════════════════════
+// ■ Bottom Navigation
+// ═══════════════════════════════════════════════════════════
 
 function setupBottomNavigation() {
-  const navItems = document.querySelectorAll('.bottom-nav-item[data-section]');
-  const navSave = document.getElementById('nav-save-attendance');
-
-  navItems.forEach(item => {
-    item.addEventListener('click', function () {
-      navItems.forEach(n => n.classList.remove('active'));
-      this.classList.add('active');
-
-      const sectionId = this.getAttribute('data-section');
-      const section = document.getElementById(sectionId);
-      if (section) {
-        section.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
+  document.querySelectorAll('.bottom-nav-item[data-section]').forEach((item) => {
+    item.addEventListener('click', () => {
+      const sectionId = item.getAttribute('data-section');
+      window.HalaqatnaNavigation?.registerSection(sectionId, { behavior: 'smooth' });
     });
   });
 
-  // FAB في الشريط السفلي
-  if (navSave) {
-    navSave.addEventListener('click', () => saveAllAttendance());
-  }
-
-  // FAB العائم
-  const fabSave = document.getElementById('fab-save');
-  if (fabSave) {
-    fabSave.addEventListener('click', () => saveAllAttendance());
-  }
+  document.getElementById('nav-save-attendance')?.addEventListener('click', saveAllAttendance);
+  document.getElementById('fab-save')?.addEventListener('click', saveAllAttendance);
 }
 
-// ═══════════════════════════════════
+// ═══════════════════════════════════════════════════════════
 // ■ Long Press Context Menu
-// ═══════════════════════════════════
+// ═══════════════════════════════════════════════════════════
 
 let longPressTimer = null;
 let longPressStudentId = null;
 
 function setupLongPressMenu() {
   const menu = document.getElementById('context-menu');
-  if (!menu) return;
+  const tbody = document.getElementById('students-tbody');
+  if (!menu || !tbody) return;
 
-  // إغلاق القائمة عند الضغط في أي مكان
-  document.addEventListener('click', () => { menu.style.display = 'none'; });
-  document.addEventListener('touchstart', (e) => {
-    if (!menu.contains(e.target)) menu.style.display = 'none';
+  document.addEventListener('click', () => {
+    menu.style.display = 'none';
+  });
+
+  document.addEventListener('touchstart', (event) => {
+    if (!menu.contains(event.target)) {
+      menu.style.display = 'none';
+    }
   }, { passive: true });
 
-  // مستمعات أزرار القائمة
   document.getElementById('ctx-profile')?.addEventListener('click', () => {
     if (longPressStudentId) openStudentProfile(longPressStudentId);
   });
@@ -466,30 +453,22 @@ function setupLongPressMenu() {
     if (longPressStudentId) confirmDeleteStudent(longPressStudentId);
   });
 
-  // Long press على الجدول (event delegation)
-  const tbody = document.getElementById('students-tbody');
-  if (!tbody) return;
-
-  tbody.addEventListener('touchstart', function (e) {
-    const nameLink = e.target.closest('.student-name-link');
+  tbody.addEventListener('touchstart', (event) => {
+    const nameLink = event.target.closest('.student-name-link');
     if (!nameLink) return;
 
     const row = nameLink.closest('tr[data-id]');
     if (!row) return;
 
     longPressTimer = setTimeout(() => {
-      e.preventDefault();
+      event.preventDefault();
       longPressStudentId = row.getAttribute('data-id');
-
-      const touch = e.touches[0];
+      const touch = event.touches[0];
       const x = Math.min(touch.clientX, window.innerWidth - 220);
       const y = Math.min(touch.clientY, window.innerHeight - 160);
-
-      menu.style.left = x + 'px';
-      menu.style.top = y + 'px';
+      menu.style.left = `${x}px`;
+      menu.style.top = `${y}px`;
       menu.style.display = 'block';
-
-      // haptic feedback if supported
       if (navigator.vibrate) navigator.vibrate(30);
     }, 500);
   }, { passive: false });
@@ -498,71 +477,70 @@ function setupLongPressMenu() {
   tbody.addEventListener('touchmove', () => clearTimeout(longPressTimer));
 }
 
-// ═══════════════════════════════════
-// ■ Swipe to Refresh
-// ═══════════════════════════════════
+// ═══════════════════════════════════════════════════════════
+// ■ Swipe To Refresh
+// ═══════════════════════════════════════════════════════════
 
 function setupSwipeToRefresh() {
   let startY = 0;
   let pulling = false;
-  const main = document.getElementById('main-content');
-  if (!main) return;
+  const mainContent = document.getElementById('main-content');
+  if (!mainContent) return;
 
-  main.addEventListener('touchstart', (e) => {
+  mainContent.addEventListener('touchstart', (event) => {
     if (window.scrollY === 0) {
-      startY = e.touches[0].clientY;
+      startY = event.touches[0].clientY;
       pulling = true;
     }
   }, { passive: true });
 
-  main.addEventListener('touchmove', (e) => {
+  mainContent.addEventListener('touchmove', (event) => {
     if (!pulling) return;
-    const diff = e.touches[0].clientY - startY;
+    const diff = event.touches[0].clientY - startY;
     if (diff > 120) {
       pulling = false;
       showToast('جاري تحديث البيانات...', 'success');
       setTimeout(() => {
-        renderStudentsTable();
-        updateDashboardCards();
-        renderWeeklyReport();
+        refreshMainViews();
         updateMockDataStatus();
         showToast('تم تحديث البيانات');
       }, 300);
     }
   }, { passive: true });
 
-  main.addEventListener('touchend', () => { pulling = false; }, { passive: true });
+  mainContent.addEventListener('touchend', () => {
+    pulling = false;
+  }, { passive: true });
 }
 
-// ═══════════════════════════════════
-// ■ إضافة data-label للجدول (بطاقات الموبايل)
-// ═══════════════════════════════════
+// ═══════════════════════════════════════════════════════════
+// ■ تحسين عرض الجدول كبطاقات
+// ═══════════════════════════════════════════════════════════
 
 function injectTableDataLabels() {
   const labels = ['م', 'الاسم', 'الحفظ', 'المراجعة', 'الأجزاء', 'الحضور', 'التقييم', 'ملاحظات', 'إجراءات'];
-
-  // مراقب لإضافة data-label عند تحديث الجدول
   const tbody = document.getElementById('students-tbody');
   if (!tbody) return;
 
-  const observer = new MutationObserver(() => {
-    tbody.querySelectorAll('tr[data-id]').forEach(row => {
+  const applyLabels = () => {
+    tbody.querySelectorAll('tr[data-id]').forEach((row) => {
       const cells = row.querySelectorAll('td');
-      cells.forEach((td, i) => {
-        if (labels[i] && !td.getAttribute('data-label')) {
-          td.setAttribute('data-label', labels[i]);
+      cells.forEach((cell, index) => {
+        if (labels[index]) {
+          cell.setAttribute('data-label', labels[index]);
         }
       });
     });
-  });
+  };
 
+  const observer = new MutationObserver(applyLabels);
   observer.observe(tbody, { childList: true, subtree: false });
+  applyLabels();
+}
 
-  // تشغيل أولي
-  tbody.querySelectorAll('tr[data-id]').forEach(row => {
-    const cells = row.querySelectorAll('td');
-    cells.forEach((td, i) => {
-      if (labels[i]) td.setAttribute('data-label', labels[i]);
-    });
-  });
+function refreshMainViews() {
+  renderStudentsTable();
+  updateDashboardCards();
+  renderWeeklyReport();
+  updateStorageStatusCard?.();
 }

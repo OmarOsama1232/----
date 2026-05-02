@@ -34,7 +34,7 @@
 
 body {
   font-family: 'Cairo', sans-serif;
-  font-size: 16px;
+  font-size: clamp(14px, 1.1vw, 16px);
   background: var(--color-bg);
   color: var(--color-text);
   direction: rtl;
@@ -45,6 +45,7 @@ body {
 a { text-decoration: none; color: inherit; }
 img { max-width: 100%; }
 input, select, button, textarea { font-family: 'Cairo', sans-serif; }
+button, .btn-primary, .btn-secondary, .btn-add, .btn-header { min-height: 44px; }
 
 /* ── الشريط العلوي ── */
 .header {
@@ -1061,6 +1062,13 @@ input, select, button, textarea { font-family: 'Cairo', sans-serif; }
   line-height: 1.5;
 }
 
+.admin-tool-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
 .btn-admin {
   border: none;
   padding: 10px 22px;
@@ -1271,4 +1279,299 @@ input, select, button, textarea { font-family: 'Cairo', sans-serif; }
   .prayer-time-item { padding: 12px 8px; border-radius: 12px; }
   .prayer-time-item i { font-size: 20px; }
   .prayer-time-value { font-size: 16px; }
+}
+
+
+.profile-export-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.btn-qibla-card {
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.18);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+}
+
+.prayer-location-status {
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #166534;
+  font-size: 13px;
+}
+
+.prayer-settings-card {
+  margin-top: 16px;
+  padding: 16px;
+  border-radius: 18px;
+  background: #f8fafc;
+  border: 1px solid var(--color-border);
+}
+
+.prayer-settings-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.prayer-settings-header h3 {
+  font-size: 16px;
+  margin-bottom: 4px;
+}
+
+.prayer-settings-header p {
+  color: var(--color-text-light);
+  font-size: 13px;
+}
+
+.prayer-settings-meta {
+  color: var(--color-gray);
+  font-size: 12px;
+  line-height: 1.6;
+  margin-top: 4px;
+}
+
+.prayer-settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.prayer-settings-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.prayer-settings-exact {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px dashed var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.switch {
+  position: relative;
+  display: inline-flex;
+  width: 58px;
+  height: 32px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.switch-slider {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: #cbd5e1;
+  transition: var(--transition);
+}
+
+.switch-slider::before {
+  content: '';
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  top: 4px;
+  right: 4px;
+  background: #fff;
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition);
+}
+
+.switch input:checked + .switch-slider {
+  background: linear-gradient(135deg, var(--color-primary-light), var(--color-primary));
+}
+
+.switch input:checked + .switch-slider::before {
+  transform: translateX(-26px);
+}
+
+.qibla-modal-content {
+  max-width: 520px;
+}
+
+.qibla-modal-title {
+  justify-content: space-between;
+}
+
+.qibla-compass-wrap {
+  display: flex;
+  justify-content: center;
+  margin: 12px 0 18px;
+}
+
+.qibla-compass {
+  position: relative;
+  width: min(72vw, 300px);
+  height: min(72vw, 300px);
+  border-radius: 50%;
+  background: radial-gradient(circle at center, rgba(255,255,255,0.98) 0%, rgba(240,253,244,0.95) 58%, rgba(187,247,208,0.95) 100%);
+  border: 10px solid #dcfce7;
+  box-shadow: var(--shadow-lg);
+}
+
+.qibla-compass::before {
+  content: '';
+  position: absolute;
+  inset: 20px;
+  border-radius: 50%;
+  border: 1px dashed rgba(22,101,52,0.25);
+}
+
+.qibla-compass-rose {
+  position: absolute;
+  inset: 0;
+  transition: transform 0.18s linear;
+}
+
+.qibla-mark {
+  position: absolute;
+  font-weight: 800;
+  color: var(--color-primary);
+}
+
+.qibla-mark-n { top: 14px; left: 50%; transform: translateX(-50%); }
+.qibla-mark-e { top: 50%; right: 14px; transform: translateY(-50%); }
+.qibla-mark-s { bottom: 14px; left: 50%; transform: translateX(-50%); }
+.qibla-mark-w { top: 50%; left: 14px; transform: translateY(-50%); }
+
+.qibla-needle,
+.qibla-arrow {
+  position: absolute;
+  left: 50%;
+  bottom: 50%;
+  transform-origin: center bottom;
+}
+
+.qibla-needle {
+  width: 6px;
+  height: 42%;
+  background: linear-gradient(180deg, #ef4444 0%, #b91c1c 100%);
+  border-radius: 999px;
+  box-shadow: 0 0 0 4px rgba(239,68,68,0.15);
+}
+
+.qibla-arrow {
+  width: 0;
+  height: 0;
+  border-left: 14px solid transparent;
+  border-right: 14px solid transparent;
+  border-bottom: 96px solid rgba(31,94,58,0.28);
+}
+
+.qibla-center-dot {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 0 8px rgba(34,197,94,0.16);
+}
+
+.qibla-info {
+  display: grid;
+  gap: 8px;
+  text-align: center;
+}
+
+.qibla-info > div:first-child {
+  font-weight: 800;
+  color: var(--color-primary);
+  font-size: 18px;
+}
+
+.qibla-diagnostics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.qibla-diagnostics-item {
+  padding: 12px 14px;
+  background: #f8fafc;
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: center;
+}
+
+.qibla-diagnostics-item span {
+  color: var(--color-gray);
+  font-size: 12px;
+}
+
+.qibla-diagnostics-item strong {
+  color: var(--color-primary);
+  font-size: 14px;
+}
+
+.qibla-actions {
+  justify-content: center;
+  margin-top: 18px;
+}
+
+.export-loading-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.38);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 12000;
+  backdrop-filter: blur(4px);
+}
+
+.export-loading-overlay.active {
+  display: flex;
+}
+
+.export-loading-box {
+  background: #fff;
+  border-radius: 22px;
+  padding: 18px 22px;
+  min-width: 240px;
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+#student-profile-report {
+  background: var(--color-white);
+  border-radius: 20px;
 }

@@ -244,6 +244,26 @@
             <p id="mock-status-text">لا توجد بيانات تجريبية</p>
           </div>
         </div>
+        <div class="admin-tool-card">
+          <div class="admin-tool-icon" style="background: linear-gradient(135deg, #0f766e, #115e59);">
+            <i class="fas fa-shield-heart"></i>
+          </div>
+          <div class="admin-tool-info">
+            <h4>سلامة التخزين المحلي</h4>
+            <p id="storage-status-text">جارٍ فحص سلامة التخزين المحلي...</p>
+          </div>
+          <div class="admin-tool-actions">
+            <button class="btn-admin btn-admin-generate" onclick="inspectStorageHealth()">
+              <i class="fas fa-stethoscope"></i> فحص
+            </button>
+            <button class="btn-admin btn-admin-generate" onclick="downloadEmergencyBackup()">
+              <i class="fas fa-download"></i> نسخة آمنة
+            </button>
+            <button class="btn-admin btn-admin-delete" onclick="restoreLastStorageSnapshot()">
+              <i class="fas fa-rotate-left"></i> استرجاع
+            </button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -512,6 +532,7 @@
           <div>
             <h3>تذكيرات الصلاة</h3>
             <p id="prayer-notification-status">التذكيرات متوقفة حالياً.</p>
+            <p id="prayer-notification-details" class="prayer-settings-meta">سيتم عرض حالة الجدولة هنا بعد التفعيل.</p>
           </div>
           <label class="switch">
             <input type="checkbox" id="prayer-notifications-enabled">
@@ -532,6 +553,12 @@
           </button>
           <button class="btn-secondary" id="btn-open-qibla-from-prayer">
             <i class="fas fa-compass"></i> القبلة
+          </button>
+        </div>
+        <div class="prayer-settings-exact">
+          <div id="prayer-exact-alarm-status" class="prayer-settings-meta">جارٍ فحص إمكانية الإشعارات الدقيقة...</div>
+          <button class="btn-secondary" id="btn-open-exact-alarm-settings" style="display:none;">
+            <i class="fas fa-bell"></i> تفعيل الإشعارات الدقيقة
           </button>
         </div>
       </div>
@@ -572,6 +599,24 @@
         <div id="qibla-angle-text">القبلة: غير متاحة</div>
         <div id="qibla-heading-text">اتجاه الهاتف: غير متاح</div>
         <div id="qibla-status-text">جاري تحديد الاتجاه...</div>
+      </div>
+      <div class="qibla-diagnostics">
+        <div class="qibla-diagnostics-item">
+          <span>المصدر</span>
+          <strong id="qibla-diagnostics-source">غير متاح</strong>
+        </div>
+        <div class="qibla-diagnostics-item">
+          <span>جودة القراءة</span>
+          <strong id="qibla-diagnostics-quality">ضعيفة</strong>
+        </div>
+        <div class="qibla-diagnostics-item">
+          <span>دقة الموقع</span>
+          <strong id="qibla-diagnostics-accuracy">غير معروفة</strong>
+        </div>
+        <div class="qibla-diagnostics-item">
+          <span>العينات</span>
+          <strong id="qibla-diagnostics-samples">0</strong>
+        </div>
       </div>
       <div class="modal-actions qibla-actions">
         <button class="btn-secondary" id="btn-qibla-calibrate">

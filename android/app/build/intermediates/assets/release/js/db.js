@@ -1,76 +1,433 @@
 /**
  * db.js
- * طبقة التعامل مع LocalStorage
- * يحتوي على جميع دوال القراءة والكتابة للبيانات
- * مع آلية تحقق وتسجيل في وحدة التحكم
+ * طبقة التخزين المحلية الموثوقة للتطبيق
+ * - FIX 6: StorageService + metadata + snapshots + validation
+ * - توافق كامل مع البيانات القديمة في localStorage
  */
 
-// ═══════════════════════════════════
-// ■ علامة البيانات التجريبية
-// ═══════════════════════════════════
 const MOCK_DATA_MARKER = '__mock__';
+const STORAGE_SCHEMA_VERSION = 2;
+const STORAGE_ENVELOPE_FLAG = '__halaqatnaEnvelope';
+const STORAGE_META_KEY = 'halaqatna_app_meta';
+const STORAGE_DEVICE_KEY = 'halaqatna_device_id';
+const STORAGE_SNAPSHOTS_KEY = 'halaqatna_storage_snapshots';
+const STORAGE_SNAPSHOT_LIMIT = 6;
+const STORAGE_SNAPSHOT_INTERVAL_MS = 15000;
+const CORE_STORAGE_KEYS = ['students', 'dailyRecords'];
+const STORAGE_SETTINGS_KEYS = [
+  'halaqatna_prayer_settings',
+  'prayerTimesCache',
+  'halaqatna_qibla_calibration',
+  'halaqatna_last_back_press'
+];
 
-// ═══════════════════════════════════
-// ■ دوال مساعدة آمنة للتخزين
-// ═══════════════════════════════════
-
-/**
- * جلب بيانات من LocalStorage وتحويلها من JSON مع حماية
- */
-function getFromStorage(key) {
+function isLocalStorageAvailable() {
   try {
-    const data = localStorage.getItem(key);
-    if (!data) return [];
-    const parsed = JSON.parse(data);
-    if (!Array.isArray(parsed)) {
-      console.warn(`⚠️ البيانات في المفتاح "${key}" ليست مصفوفة، تم إرجاع مصفوفة فارغة`);
-      return [];
-    }
-    return parsed;
-  } catch (e) {
-    console.error(`❌ خطأ في قراءة "${key}" من LocalStorage:`, e);
-    return [];
-  }
-}
-
-/**
- * حفظ بيانات في LocalStorage بتحويلها إلى JSON مع حماية
- */
-function saveToStorage(key, value) {
-  try {
-    localStorage.setItem(key, JSON.stringify(value));
-    // تحقق فوري من الحفظ
-    const verify = localStorage.getItem(key);
-    if (!verify) {
-      console.error(`❌ فشل التحقق من حفظ "${key}"`);
-      return false;
-    }
+    localStorage.setItem('__halaqatna_test__', '1');
+    localStorage.removeItem('__halaqatna_test__');
     return true;
-  } catch (e) {
-    console.error(`❌ خطأ في حفظ "${key}" في LocalStorage:`, e);
-    if (e.name === 'QuotaExceededError') {
-      alert('⚠️ مساحة التخزين ممتلئة! يرجى تصدير نسخة احتياطية وحذف بعض البيانات.');
-    }
+  } catch (error) {
     return false;
   }
 }
 
-/**
- * تسجيل حالة البيانات في وحدة التحكم
- */
+function safeJsonParse(raw, fallback = null) {
+  try {
+    return JSON.parse(raw);
+  } catch (error) {
+    return fallback;
+  }
+}
+
+function createRandomId() {
+  if (globalThis.crypto?.randomUUID) {
+    return crypto.randomUUID();
+  }
+  return `halaqatna-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
+function computeChecksum(value) {
+  const input = typeof value === 'string' ? value : JSON.stringify(value);
+  let hash = 5381;
+  for (let index = 0; index < input.length; index += 1) {
+    hash = ((hash << 5) + hash) ^ input.charCodeAt(index);
+  }
+  return `h${(hash >>> 0).toString(16)}`;
+}
+
+function getDeviceId() {
+  const existing = localStorage.getItem(STORAGE_DEVICE_KEY);
+  if (existing) return existing;
+  const next = createRandomId();
+  localStorage.setItem(STORAGE_DEVICE_KEY, next);
+  return next;
+}
+
+function getDefaultAppMeta() {
+  return {
+    schemaVersion: STORAGE_SCHEMA_VERSION,
+    deviceId: getDeviceId(),
+    installedAt: new Date().toISOString(),
+    lastSavedAt: null,
+    lastSnapshotAt: null,
+    lastAction: 'init',
+    operationLog: []
+  };
+}
+
+function readAppMeta() {
+  const parsed = safeJsonParse(localStorage.getItem(STORAGE_META_KEY), null);
+  return parsed && typeof parsed === 'object'
+    ? { ...getDefaultAppMeta(), ...parsed }
+    : getDefaultAppMeta();
+}
+
+function writeAppMeta(meta) {
+  localStorage.setItem(STORAGE_META_KEY, JSON.stringify({
+    ...getDefaultAppMeta(),
+    ...meta
+  }));
+}
+
+function appendOperationLog(action, extra = {}) {
+  const meta = readAppMeta();
+  const nextEntry = {
+    action,
+    at: new Date().toISOString(),
+    ...extra
+  };
+
+  meta.lastAction = action;
+  meta.lastSavedAt = nextEntry.at;
+  meta.operationLog = [nextEntry, ...(meta.operationLog || [])].slice(0, 20);
+  writeAppMeta(meta);
+}
+
+function buildEnvelope(key, value, reason = 'save') {
+  const serializedValue = JSON.stringify(value);
+  return {
+    [STORAGE_ENVELOPE_FLAG]: true,
+    key,
+    schemaVersion: STORAGE_SCHEMA_VERSION,
+    deviceId: getDeviceId(),
+    updatedAt: new Date().toISOString(),
+    reason,
+    checksum: computeChecksum(serializedValue),
+    value
+  };
+}
+
+function inspectStoredKey(key, fallbackValue) {
+  const raw = localStorage.getItem(key);
+  if (raw == null) {
+    return {
+      key,
+      exists: false,
+      legacy: false,
+      corrupted: false,
+      fallbackUsed: true,
+      value: fallbackValue,
+      updatedAt: null,
+      checksumValid: true
+    };
+  }
+
+  const parsed = safeJsonParse(raw, null);
+  if (parsed === null) {
+    return {
+      key,
+      exists: true,
+      legacy: false,
+      corrupted: true,
+      fallbackUsed: true,
+      value: fallbackValue,
+      updatedAt: null,
+      checksumValid: false
+    };
+  }
+
+  if (parsed && typeof parsed === 'object' && parsed[STORAGE_ENVELOPE_FLAG]) {
+    const serializedValue = JSON.stringify(parsed.value);
+    const checksumValid = parsed.checksum === computeChecksum(serializedValue);
+    return {
+      key,
+      exists: true,
+      legacy: false,
+      corrupted: false,
+      fallbackUsed: false,
+      value: parsed.value,
+      updatedAt: parsed.updatedAt || null,
+      checksumValid
+    };
+  }
+
+  return {
+    key,
+    exists: true,
+    legacy: true,
+    corrupted: false,
+    fallbackUsed: false,
+    value: parsed,
+    updatedAt: null,
+    checksumValid: true
+  };
+}
+
+const StorageService = {
+  load(key, fallbackValue = null) {
+    return inspectStoredKey(key, fallbackValue).value;
+  },
+
+  inspect(key, fallbackValue = null) {
+    return inspectStoredKey(key, fallbackValue);
+  },
+
+  save(key, value, options = {}) {
+    const {
+      snapshot = CORE_STORAGE_KEYS.includes(key),
+      reason = `save:${key}`,
+      skipLog = false
+    } = options;
+
+    try {
+      const envelope = buildEnvelope(key, value, reason);
+      localStorage.setItem(key, JSON.stringify(envelope));
+
+      if (!skipLog) {
+        appendOperationLog(reason, { key });
+      }
+
+      if (snapshot) {
+        this.snapshot(reason);
+      }
+      return true;
+    } catch (error) {
+      console.error(`Failed to save key "${key}"`, error);
+      if (error?.name === 'QuotaExceededError') {
+        alert('مساحة التخزين المحلية ممتلئة. يرجى تنزيل نسخة احتياطية ثم حذف بعض البيانات غير الضرورية.');
+      }
+      return false;
+    }
+  },
+
+  remove(key) {
+    try {
+      localStorage.removeItem(key);
+      appendOperationLog(`remove:${key}`, { key });
+      return true;
+    } catch (error) {
+      console.error(`Failed to remove key "${key}"`, error);
+      return false;
+    }
+  },
+
+  snapshot(reason = 'snapshot') {
+    const meta = readAppMeta();
+    const lastSnapshotAt = meta.lastSnapshotAt ? new Date(meta.lastSnapshotAt).getTime() : 0;
+    const now = Date.now();
+
+    if (now - lastSnapshotAt < STORAGE_SNAPSHOT_INTERVAL_MS) {
+      return false;
+    }
+
+    try {
+      const snapshots = this.getSnapshots();
+      const snapshot = {
+        id: createRandomId(),
+        createdAt: new Date(now).toISOString(),
+        reason,
+        data: {
+          students: this.load('students', []),
+          dailyRecords: this.load('dailyRecords', []),
+          settings: this.collectSettings(),
+          appMeta: readAppMeta()
+        }
+      };
+
+      const nextSnapshots = [snapshot, ...snapshots].slice(0, STORAGE_SNAPSHOT_LIMIT);
+      localStorage.setItem(STORAGE_SNAPSHOTS_KEY, JSON.stringify(nextSnapshots));
+      writeAppMeta({
+        ...meta,
+        lastSnapshotAt: snapshot.createdAt
+      });
+      return true;
+    } catch (error) {
+      console.error('Failed to save storage snapshot', error);
+      return false;
+    }
+  },
+
+  getSnapshots() {
+    const parsed = safeJsonParse(localStorage.getItem(STORAGE_SNAPSHOTS_KEY), []);
+    return Array.isArray(parsed) ? parsed : [];
+  },
+
+  collectSettings() {
+    return STORAGE_SETTINGS_KEYS.reduce((accumulator, key) => {
+      const raw = localStorage.getItem(key);
+      if (raw != null) {
+        accumulator[key] = safeJsonParse(raw, raw);
+      }
+      return accumulator;
+    }, {});
+  },
+
+  applySettings(settings = {}) {
+    Object.entries(settings).forEach(([key, value]) => {
+      try {
+        if (typeof value === 'string') {
+          localStorage.setItem(key, value);
+        } else {
+          localStorage.setItem(key, JSON.stringify(value));
+        }
+      } catch (error) {
+        console.warn(`Failed to restore setting "${key}"`, error);
+      }
+    });
+  },
+
+  getHealthReport() {
+    const studentsInfo = this.inspect('students', []);
+    const recordsInfo = this.inspect('dailyRecords', []);
+    const students = Array.isArray(studentsInfo.value) ? studentsInfo.value : [];
+    const records = Array.isArray(recordsInfo.value) ? recordsInfo.value : [];
+    const snapshots = this.getSnapshots();
+    const meta = readAppMeta();
+
+    const corruptedKeys = [studentsInfo, recordsInfo]
+      .filter((item) => item.corrupted || item.checksumValid === false)
+      .map((item) => item.key);
+
+    return {
+      schemaVersion: STORAGE_SCHEMA_VERSION,
+      deviceId: getDeviceId(),
+      studentsCount: students.length,
+      recordsCount: records.length,
+      snapshotsCount: snapshots.length,
+      lastSavedAt: meta.lastSavedAt,
+      lastSnapshotAt: meta.lastSnapshotAt,
+      corruptedKeys,
+      legacyKeys: [studentsInfo, recordsInfo].filter((item) => item.legacy).map((item) => item.key),
+      healthy: corruptedKeys.length === 0,
+      lastAction: meta.lastAction
+    };
+  },
+
+  restoreLastHealthySnapshot() {
+    const snapshots = this.getSnapshots();
+    const snapshot = snapshots.find((item) => {
+      const data = item?.data;
+      return Array.isArray(data?.students) && Array.isArray(data?.dailyRecords);
+    });
+
+    if (!snapshot) {
+      return false;
+    }
+
+    const restored = this.importBundle({
+      schemaVersion: STORAGE_SCHEMA_VERSION,
+      students: snapshot.data.students,
+      dailyRecords: snapshot.data.dailyRecords,
+      settings: snapshot.data.settings || {},
+      appMeta: snapshot.data.appMeta || {}
+    }, { reason: 'restore:snapshot', createSnapshot: false });
+
+    if (restored) {
+      appendOperationLog('restore:snapshot', { snapshotId: snapshot.id });
+    }
+    return restored;
+  },
+
+  exportBundle() {
+    const meta = readAppMeta();
+    return {
+      schemaVersion: STORAGE_SCHEMA_VERSION,
+      exportDate: new Date().toISOString(),
+      appVersion: '1.3',
+      deviceId: getDeviceId(),
+      students: this.load('students', []),
+      dailyRecords: this.load('dailyRecords', []),
+      core: {
+        students: this.load('students', []),
+        dailyRecords: this.load('dailyRecords', [])
+      },
+      settings: this.collectSettings(),
+      appMeta: meta,
+      storageHealth: this.getHealthReport()
+    };
+  },
+
+  importBundle(data, options = {}) {
+    const { reason = 'import', createSnapshot = true } = options;
+    const students = Array.isArray(data?.core?.students) ? data.core.students : data?.students;
+    const dailyRecords = Array.isArray(data?.core?.dailyRecords) ? data.core.dailyRecords : data?.dailyRecords;
+
+    if (!Array.isArray(students) || !Array.isArray(dailyRecords)) {
+      return false;
+    }
+
+    const currentMeta = readAppMeta();
+    if (createSnapshot) {
+      this.snapshot(`before:${reason}`);
+    }
+
+    const studentsSaved = this.save('students', students, {
+      snapshot: false,
+      reason: `${reason}:students`,
+      skipLog: true
+    });
+    const recordsSaved = this.save('dailyRecords', dailyRecords, {
+      snapshot: false,
+      reason: `${reason}:dailyRecords`,
+      skipLog: true
+    });
+
+    if (!studentsSaved || !recordsSaved) {
+      return false;
+    }
+
+    if (data.settings && typeof data.settings === 'object') {
+      this.applySettings(data.settings);
+    }
+
+    writeAppMeta({
+      ...currentMeta,
+      ...data.appMeta,
+      schemaVersion: STORAGE_SCHEMA_VERSION,
+      deviceId: getDeviceId(),
+      lastAction: reason,
+      lastSavedAt: new Date().toISOString()
+    });
+
+    if (createSnapshot) {
+      this.snapshot(reason);
+    }
+
+    appendOperationLog(reason, {
+      studentsCount: students.length,
+      recordsCount: dailyRecords.length
+    });
+    return true;
+  }
+};
+
+function getFromStorage(key, fallback = []) {
+  return StorageService.load(key, fallback);
+}
+
+function saveToStorage(key, value, options = {}) {
+  return StorageService.save(key, value, options);
+}
+
 function logDataStatus(action) {
   try {
     const students = getAllStudents();
     const records = getDailyRecords();
-    console.log(`✅ ${action} — عدد الطلاب: ${students.length} | عدد السجلات: ${records.length}`);
-  } catch (e) {
-    console.error('❌ خطأ في تسجيل حالة البيانات:', e);
+    console.log(`${action} — الطلاب: ${students.length} | السجلات: ${records.length}`);
+  } catch (error) {
+    console.error('Failed to log storage status', error);
   }
 }
-
-// ═══════════════════════════════════
-// ■ دوال التاريخ
-// ═══════════════════════════════════
 
 function getTodayDate() {
   const now = new Date();
@@ -96,341 +453,327 @@ function formatDateString(dateObj) {
   return `${year}-${month}-${day}`;
 }
 
-// ═══════════════════════════════════
-// ■ دوال إدارة الطلاب
-// ═══════════════════════════════════
-
 function getAllStudents() {
-  return getFromStorage('students');
+  const students = getFromStorage('students', []);
+  return Array.isArray(students) ? students : [];
 }
 
 function getStudentById(id) {
-  const students = getAllStudents();
-  return students.find(s => s.id === id);
+  return getAllStudents().find((student) => student.id === id);
 }
 
 function saveStudent(student) {
   const students = getAllStudents();
   students.push(student);
-  saveToStorage('students', students);
-  logDataStatus('تم إضافة طالب');
+  saveToStorage('students', students, { reason: 'student:create' });
+  logDataStatus('تمت إضافة طالب');
 }
 
 function updateStudent(updatedStudent) {
   const students = getAllStudents();
-  const index = students.findIndex(s => s.id === updatedStudent.id);
+  const index = students.findIndex((student) => student.id === updatedStudent.id);
   if (index !== -1) {
     students[index] = updatedStudent;
-    saveToStorage('students', students);
+    saveToStorage('students', students, { reason: 'student:update' });
   }
 }
 
-/**
- * حذف طالب وجميع سجلاته اليومية (حذف آمن شامل)
- */
 function deleteStudent(id) {
-  // 1. حذف سجلات الطالب أولاً
   deleteRecordsByStudentId(id);
-  // 2. ثم حذف الطالب
-  const students = getAllStudents();
-  const filtered = students.filter(s => s.id !== id);
-  saveToStorage('students', filtered);
+  const students = getAllStudents().filter((student) => student.id !== id);
+  saveToStorage('students', students, { reason: 'student:delete' });
   logDataStatus('تم حذف طالب وجميع سجلاته');
-
-  // 3. تحقق نهائي
-  const checkStudent = getStudentById(id);
-  const checkRecords = getRecordsForStudent(id);
-  if (checkStudent || checkRecords.length > 0) {
-    console.error(`❌ فشل الحذف الكامل للطالب ${id}`);
-  } else {
-    console.log(`✅ تم التحقق: الطالب ${id} وجميع سجلاته حُذفت بالكامل`);
-  }
 }
-
-// ═══════════════════════════════════
-// ■ دوال السجلات اليومية
-// ═══════════════════════════════════
 
 function getDailyRecords() {
-  return getFromStorage('dailyRecords');
+  const records = getFromStorage('dailyRecords', []);
+  return Array.isArray(records) ? records : [];
 }
 
 function getRecordByStudentAndDate(studentId, date) {
-  const records = getDailyRecords();
-  return records.find(r => r.studentId === studentId && r.date === date);
+  return getDailyRecords().find((record) => record.studentId === studentId && record.date === date);
 }
 
 function getRecordsByDate(date) {
-  const records = getDailyRecords();
-  return records.filter(r => r.date === date);
+  return getDailyRecords().filter((record) => record.date === date);
 }
 
 function getRecordsForStudent(studentId) {
-  const records = getDailyRecords();
-  return records.filter(r => r.studentId === studentId);
+  return getDailyRecords().filter((record) => record.studentId === studentId);
 }
 
 function getRecordsLast7Days(studentId) {
-  const records = getRecordsForStudent(studentId);
   const sevenDaysAgo = getDateDaysAgo(7);
-  return records.filter(r => r.date >= sevenDaysAgo);
+  return getRecordsForStudent(studentId).filter((record) => record.date >= sevenDaysAgo);
 }
 
 function getRecordsLastNDays(studentId, days) {
-  const records = getRecordsForStudent(studentId);
   const nDaysAgo = getDateDaysAgo(days);
-  return records.filter(r => r.date >= nDaysAgo);
+  return getRecordsForStudent(studentId).filter((record) => record.date >= nDaysAgo);
 }
 
 function saveDailyRecord(record) {
   const records = getDailyRecords();
   const existingIndex = records.findIndex(
-    r => r.studentId === record.studentId && r.date === record.date
+    (current) => current.studentId === record.studentId && current.date === record.date
   );
 
   if (existingIndex !== -1) {
     records[existingIndex] = { ...records[existingIndex], ...record };
   } else {
-    record.id = record.id || crypto.randomUUID();
+    record.id = record.id || createRandomId();
     records.push(record);
   }
 
-  saveToStorage('dailyRecords', records);
+  saveToStorage('dailyRecords', records, { reason: 'record:save' });
 }
 
 function deleteRecordsByStudentId(studentId) {
-  const records = getDailyRecords();
-  const filtered = records.filter(r => r.studentId !== studentId);
-  saveToStorage('dailyRecords', filtered);
+  const filtered = getDailyRecords().filter((record) => record.studentId !== studentId);
+  saveToStorage('dailyRecords', filtered, { reason: 'record:deleteByStudent' });
 }
 
-// ═══════════════════════════════════
-// ■ دوال النسخ الاحتياطي
-// ═══════════════════════════════════
-
 function exportAllData() {
-  const data = {
-    students: getAllStudents(),
-    dailyRecords: getDailyRecords(),
-    exportDate: new Date().toISOString(),
-    appVersion: '1.1'
-  };
+  const data = StorageService.exportBundle();
   logDataStatus('تم تصدير البيانات');
   return data;
 }
 
 function importAllData(data) {
-  if (!data || !Array.isArray(data.students) || !Array.isArray(data.dailyRecords)) {
-    return false;
+  const imported = StorageService.importBundle(data, { reason: 'import:bundle', createSnapshot: true });
+  if (imported) {
+    logDataStatus('تم استيراد البيانات');
   }
-  saveToStorage('students', data.students);
-  saveToStorage('dailyRecords', data.dailyRecords);
-  logDataStatus('تم استيراد البيانات');
-  return true;
+  return imported;
 }
 
-// ═══════════════════════════════════
-// ■ تهيئة وتحقق من البيانات
-// ═══════════════════════════════════
-
-function initializeStorage() {
-  // التحقق من توفر LocalStorage
-  try {
-    localStorage.setItem('__test__', '1');
-    localStorage.removeItem('__test__');
-  } catch (e) {
-    console.error('❌ LocalStorage غير متاح!');
-    alert('⚠️ التخزين المحلي غير متاح في هذا المتصفح. لن يتم حفظ البيانات!');
-    return;
-  }
-
-  if (localStorage.getItem('students') === null) {
-    saveToStorage('students', []);
-  }
-  if (localStorage.getItem('dailyRecords') === null) {
-    saveToStorage('dailyRecords', []);
-  }
-
-  // تحقق من صحة البيانات وإصلاحها
-  validateAndRepairData();
-  logDataStatus('تم تحميل البيانات بنجاح');
-}
-
-/**
- * التحقق من صحة البيانات وإصلاح الأخطاء البسيطة
- */
 function validateAndRepairData() {
   let repaired = false;
 
-  // تحقق من الطلاب
-  let students = getFromStorage('students');
-  const validStudents = students.filter(s => {
-    if (!s || !s.id || !s.name) {
-      console.warn('⚠️ تم العثور على سجل طالب تالف وتمت إزالته:', s);
+  const rawStudents = getAllStudents();
+  const validStudents = rawStudents.filter((student) => {
+    if (!student || !student.id || !student.name) {
       repaired = true;
       return false;
     }
-    // إصلاح حقول ناقصة
-    if (!s.currentMemorization) {
-      s.currentMemorization = { surah: '', surahNumber: 0, details: '' };
+
+    if (student.currentMemorization) {
+      student.currentHifz = {
+        surah: student.currentMemorization.surah,
+        surahNumber: student.currentMemorization.surahNumber,
+        details: student.currentMemorization.details,
+        from: '',
+        to: '',
+        isFull: false
+      };
+      delete student.currentMemorization;
       repaired = true;
     }
-    if (!s.revision) {
-      s.revision = { surah: '', surahNumber: 0, details: '' };
+
+    if (!student.currentHifz) {
+      student.currentHifz = { surah: '', surahNumber: 0, details: '', from: '', to: '', isFull: false };
       repaired = true;
     }
-    if (typeof s.partsMemorized !== 'number') {
-      s.partsMemorized = 0;
+
+    if (student.revision) {
+      student.currentReview = {
+        surah: student.revision.surah,
+        surahNumber: student.revision.surahNumber,
+        details: student.revision.details,
+        from: '',
+        to: '',
+        isFull: false
+      };
+      delete student.revision;
       repaired = true;
     }
+
+    if (!student.currentReview) {
+      student.currentReview = { surah: '', surahNumber: 0, details: '', from: '', to: '', isFull: false };
+      repaired = true;
+    }
+
+    if (typeof student.partsMemorized !== 'number' || Number.isNaN(student.partsMemorized)) {
+      student.partsMemorized = 0;
+      repaired = true;
+    }
+
     return true;
   });
 
-  if (validStudents.length !== students.length || repaired) {
-    saveToStorage('students', validStudents);
+  if (repaired || validStudents.length !== rawStudents.length) {
+    saveToStorage('students', validStudents, { reason: 'repair:students', snapshot: false });
   }
 
-  // تحقق من السجلات
-  let records = getFromStorage('dailyRecords');
-  const validStudentIds = new Set(validStudents.map(s => s.id));
-  const validRecords = records.filter(r => {
-    if (!r || !r.studentId || !r.date) {
-      console.warn('⚠️ تم العثور على سجل يومي تالف وتمت إزالته:', r);
+  const validStudentIds = new Set(validStudents.map((student) => student.id));
+  const rawRecords = getDailyRecords();
+  const validRecords = rawRecords.filter((record) => {
+    if (!record || !record.studentId || !record.date) {
+      repaired = true;
       return false;
     }
-    // إصلاح حقول ناقصة
-    if (typeof r.present !== 'boolean') r.present = false;
-    if (typeof r.rating !== 'number') r.rating = 0;
-    if (typeof r.note !== 'string') r.note = '';
+
+    if (!validStudentIds.has(record.studentId)) {
+      repaired = true;
+      return false;
+    }
+
+    if (typeof record.present !== 'boolean') {
+      record.present = false;
+      repaired = true;
+    }
+    if (typeof record.rating !== 'number' || Number.isNaN(record.rating)) {
+      record.rating = 0;
+      repaired = true;
+    }
+    if (typeof record.note !== 'string') {
+      record.note = '';
+      repaired = true;
+    }
+
     return true;
   });
 
-  if (validRecords.length !== records.length) {
-    saveToStorage('dailyRecords', validRecords);
-    repaired = true;
+  if (repaired || validRecords.length !== rawRecords.length) {
+    saveToStorage('dailyRecords', validRecords, { reason: 'repair:dailyRecords', snapshot: false });
   }
 
   if (repaired) {
-    console.log('🔧 تم إصلاح بعض البيانات التالفة تلقائياً');
-  } else {
-    console.log('✅ جميع البيانات سليمة ولا تحتاج إصلاح');
+    appendOperationLog('repair:auto');
   }
 }
 
-// ═══════════════════════════════════
-// ■ دوال مساعدة إضافية للفترات
-// ═══════════════════════════════════
+function initializeStorage() {
+  if (!isLocalStorageAvailable()) {
+    console.error('LocalStorage is unavailable');
+    alert('التخزين المحلي غير متاح في هذا المتصفح. لن يتم حفظ البيانات بشكل صحيح.');
+    return;
+  }
+
+  getDeviceId();
+
+  if (localStorage.getItem('students') === null) {
+    saveToStorage('students', [], { reason: 'init:students', snapshot: false });
+  }
+  if (localStorage.getItem('dailyRecords') === null) {
+    saveToStorage('dailyRecords', [], { reason: 'init:dailyRecords', snapshot: false });
+  }
+
+  const studentsState = StorageService.inspect('students', []);
+  const recordsState = StorageService.inspect('dailyRecords', []);
+  if ((studentsState.corrupted || recordsState.corrupted) && StorageService.getSnapshots().length > 0) {
+    StorageService.restoreLastHealthySnapshot();
+  }
+
+  validateAndRepairData();
+  StorageService.snapshot('init');
+  updateStorageStatusCard();
+  logDataStatus('تم تحميل البيانات بنجاح');
+}
 
 function isClassDay(dateString) {
-  const d = new Date(dateString + 'T00:00:00');
-  return CLASS_DAYS.includes(d.getDay());
+  const date = new Date(`${dateString}T00:00:00`);
+  return CLASS_DAYS.includes(date.getDay());
 }
 
 function getRecordsForPeriod(studentId, period) {
   const records = getRecordsForStudent(studentId);
   const now = new Date();
 
-  return records.filter(r => {
-    const rDate = new Date(r.date + 'T00:00:00');
+  return records.filter((record) => {
+    const recordDate = new Date(`${record.date}T00:00:00`);
     if (period === 'week') {
       const startOfWeek = new Date(now);
       startOfWeek.setDate(now.getDate() - 7);
-      return rDate >= startOfWeek;
-    } else if (period === 'month') {
-      return rDate.getMonth() === now.getMonth() && rDate.getFullYear() === now.getFullYear();
-    } else if (period === 'year') {
-      return rDate.getFullYear() === now.getFullYear();
+      return recordDate >= startOfWeek;
     }
-    return true; // all
+    if (period === 'month') {
+      return recordDate.getMonth() === now.getMonth() && recordDate.getFullYear() === now.getFullYear();
+    }
+    if (period === 'year') {
+      return recordDate.getFullYear() === now.getFullYear();
+    }
+    return true;
   });
 }
 
-// ═══════════════════════════════════
-// ■ البيانات التجريبية (سنة كاملة)
-// ═══════════════════════════════════
-
-/**
- * إنشاء بيانات تجريبية لمدة سنة كاملة
- * - أيام الأحد والخميس فقط
- * - بيانات عشوائية منطقية
- * - تميز بعلامة __mock__
- */
 function generateMockData() {
   const students = getAllStudents();
-
-  // حالة الحافة: لا يوجد طلاب
   if (students.length === 0) {
-    console.warn('⚠️ لا يوجد طلاب لإنشاء بيانات تجريبية لهم');
     return { success: false, reason: 'no_students' };
   }
 
-  // حالة الحافة: بيانات تجريبية موجودة مسبقاً
   const existingRecords = getDailyRecords();
-  const hasMockData = existingRecords.some(r => r._mock === MOCK_DATA_MARKER);
-  if (hasMockData) {
-    console.warn('⚠️ توجد بيانات تجريبية مسبقاً');
+  if (existingRecords.some((record) => record._mock === MOCK_DATA_MARKER)) {
     return { success: false, reason: 'already_exists' };
   }
 
-  // حفظ نسخة احتياطية من البيانات الحقيقية
-  const backupData = {
+  saveToStorage('_mockBackup', {
     students: JSON.parse(JSON.stringify(students)),
     dailyRecords: JSON.parse(JSON.stringify(existingRecords))
-  };
-  saveToStorage('_mockBackup', backupData);
+  }, {
+    reason: 'mock:backup',
+    snapshot: false
+  });
 
   const mockRecords = [];
   const today = new Date();
   const startDate = new Date(today);
   startDate.setFullYear(startDate.getFullYear() - 1);
 
-  const MOCK_NOTES = [
-    'ممتاز ما شاء الله', 'يحتاج مراجعة', 'أداء جيد', 'تحسن ملحوظ',
-    'يحتاج تركيز أكثر', 'حافظ متميز', 'بارك الله فيه', 'استمر',
-    'راجع الصفحة السابقة', 'أحسنت', '', '', '', '', ''
+  const mockNotes = [
+    'ممتاز ما شاء الله',
+    'يحتاج مراجعة',
+    'أداء جيد',
+    'تحسن ملحوظ',
+    'يحتاج تركيز أكثر',
+    'حافظ متميز',
+    'بارك الله فيه',
+    'استمر',
+    'راجع الصفحة السابقة',
+    'أحسنت',
+    '',
+    '',
+    ''
   ];
 
-  students.forEach(student => {
-    // لكل طالب نختار نمط أداء عشوائي
+  students.forEach((student) => {
     const performanceLevel = Math.random();
-    let baseRating, attendanceProb;
+    let baseRating;
+    let attendanceProb;
 
     if (performanceLevel > 0.7) {
-      // طالب متميز (30%)
-      baseRating = 8; attendanceProb = 0.92;
+      baseRating = 8;
+      attendanceProb = 0.92;
     } else if (performanceLevel > 0.3) {
-      // طالب متوسط (40%)
-      baseRating = 6; attendanceProb = 0.75;
+      baseRating = 6;
+      attendanceProb = 0.75;
     } else {
-      // طالب ضعيف (30%)
-      baseRating = 4; attendanceProb = 0.55;
+      baseRating = 4;
+      attendanceProb = 0.55;
     }
 
     const current = new Date(startDate);
     while (current <= today) {
       const dayOfWeek = current.getDay();
-      // فقط الأحد (0) والخميس (4)
       if (dayOfWeek === 0 || dayOfWeek === 4) {
         const dateStr = formatDateString(current);
         const isPresent = Math.random() < attendanceProb;
-        // تقييم عشوائي حول المستوى الأساسي مع تحسن تدريجي
         const daysSinceStart = Math.floor((current - startDate) / (1000 * 60 * 60 * 24));
         const improvement = Math.min(daysSinceStart / 365, 1) * 1.5;
-        let rating = isPresent
+        const rating = isPresent
           ? Math.max(1, Math.min(10, Math.round(baseRating + improvement + (Math.random() * 3 - 1.5))))
           : 0;
 
-        const note = isPresent && Math.random() > 0.6
-          ? MOCK_NOTES[Math.floor(Math.random() * MOCK_NOTES.length)]
-          : '';
-
         mockRecords.push({
-          id: crypto.randomUUID(),
+          id: createRandomId(),
           studentId: student.id,
           date: dateStr,
           present: isPresent,
-          rating: rating,
-          note: note,
+          rating,
+          note: isPresent && Math.random() > 0.6
+            ? mockNotes[Math.floor(Math.random() * mockNotes.length)]
+            : '',
           _mock: MOCK_DATA_MARKER
         });
       }
@@ -438,19 +781,19 @@ function generateMockData() {
     }
   });
 
-  // دمج السجلات الحقيقية مع التجريبية (بدون الكتابة فوق الحقيقية)
   const allRecords = [...existingRecords];
-  mockRecords.forEach(mock => {
+  mockRecords.forEach((mockRecord) => {
     const exists = allRecords.some(
-      r => r.studentId === mock.studentId && r.date === mock.date
+      (record) => record.studentId === mockRecord.studentId && record.date === mockRecord.date
     );
     if (!exists) {
-      allRecords.push(mock);
+      allRecords.push(mockRecord);
     }
   });
 
-  saveToStorage('dailyRecords', allRecords);
+  saveToStorage('dailyRecords', allRecords, { reason: 'mock:generate' });
   logDataStatus('تم إنشاء البيانات التجريبية');
+  updateStorageStatusCard();
 
   return {
     success: true,
@@ -459,24 +802,19 @@ function generateMockData() {
   };
 }
 
-/**
- * حذف البيانات التجريبية فقط مع الحفاظ على البيانات الحقيقية
- */
 function deleteMockData() {
   const records = getDailyRecords();
-  const realRecords = records.filter(r => r._mock !== MOCK_DATA_MARKER);
+  const realRecords = records.filter((record) => record._mock !== MOCK_DATA_MARKER);
   const mockCount = records.length - realRecords.length;
 
   if (mockCount === 0) {
     return { success: false, reason: 'no_mock_data' };
   }
 
-  saveToStorage('dailyRecords', realRecords);
-
-  // حذف النسخة الاحتياطية
-  try { localStorage.removeItem('_mockBackup'); } catch (e) { /* ignore */ }
-
+  saveToStorage('dailyRecords', realRecords, { reason: 'mock:delete' });
+  StorageService.remove('_mockBackup');
   logDataStatus('تم حذف البيانات التجريبية');
+  updateStorageStatusCard();
 
   return {
     success: true,
@@ -485,10 +823,73 @@ function deleteMockData() {
   };
 }
 
-/**
- * التحقق من وجود بيانات تجريبية
- */
 function hasMockData() {
-  const records = getDailyRecords();
-  return records.some(r => r._mock === MOCK_DATA_MARKER);
+  return getDailyRecords().some((record) => record._mock === MOCK_DATA_MARKER);
+}
+
+function updateStorageStatusCard() {
+  const text = document.getElementById('storage-status-text');
+  if (!text) return;
+
+  const report = StorageService.getHealthReport();
+  const healthLabel = report.healthy ? 'سليم' : 'بحاجة لمراجعة';
+  text.textContent = `الحالة: ${healthLabel} • الطلاب: ${report.studentsCount} • السجلات: ${report.recordsCount} • اللقطات: ${report.snapshotsCount}`;
+}
+
+function inspectStorageHealth(showFeedback = true) {
+  const report = StorageService.getHealthReport();
+  updateStorageStatusCard();
+
+  if (showFeedback) {
+    if (report.healthy) {
+      showToast(`فحص التخزين ناجح: ${report.studentsCount} طالب و ${report.recordsCount} سجل و ${report.snapshotsCount} لقطات آمنة`);
+    } else {
+      showToast(`تم اكتشاف مشكلة في: ${report.corruptedKeys.join('، ')}`, 'warning');
+    }
+  }
+
+  return report;
+}
+
+function downloadEmergencyBackup() {
+  const data = exportAllData();
+  const jsonString = JSON.stringify(data, null, 2);
+  const blob = new Blob([jsonString], { type: 'application/json;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const filename = `حلقتنا-safe-backup-${getTodayDate()}.json`;
+
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+
+  showToast('تم تنزيل النسخة الاحتياطية الآمنة بنجاح');
+}
+
+async function restoreLastStorageSnapshot() {
+  const snapshots = StorageService.getSnapshots();
+  if (!snapshots.length) {
+    showToast('لا توجد لقطة محلية يمكن الاسترجاع منها', 'warning');
+    return;
+  }
+
+  const latest = snapshots[0];
+  const confirmed = await showConfirm(
+    `سيتم استرجاع آخر لقطة سليمة محفوظة بتاريخ ${latest.createdAt}. قد تُفقد آخر تعديلات غير محفوظة في هذه اللقطة. هل تريد المتابعة؟`,
+    'استرجاع آخر لقطة سليمة'
+  );
+
+  if (!confirmed) return;
+
+  const restored = StorageService.restoreLastHealthySnapshot();
+  if (!restored) {
+    showToast('تعذر استرجاع آخر لقطة سليمة', 'error');
+    return;
+  }
+
+  showToast('تم استرجاع آخر لقطة سليمة. سيتم تحديث التطبيق الآن.');
+  setTimeout(() => location.reload(), 900);
 }

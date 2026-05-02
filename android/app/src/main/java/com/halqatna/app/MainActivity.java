@@ -2,6 +2,9 @@ package com.halqatna.app;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.AlarmManager;
+import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.hardware.Sensor;
@@ -44,6 +47,7 @@ public class MainActivity extends AppCompatActivity {
     private Sensor headingSensor;
     private SensorEventListener headingListener;
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
+    private String pendingLaunchAction;
 
     @SuppressLint({"SetJavaScriptEnabled", "JavascriptInterface"})
     @Override
@@ -54,6 +58,7 @@ public class MainActivity extends AppCompatActivity {
         progressBar = findViewById(R.id.progressBar);
         webView = findViewById(R.id.webView);
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+        pendingLaunchAction = extractLaunchAction(getIntent());
 
         final WebViewAssetLoader assetLoader = new WebViewAssetLoader.Builder()
                 .addPathHandler("/assets/", new WebViewAssetLoader.AssetsPathHandler(this))
@@ -85,6 +90,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onPageFinished(WebView view, String url) {
                 progressBar.setVisibility(ProgressBar.GONE);
+                deliverPendingLaunchAction();
             }
         });
 
@@ -110,6 +116,14 @@ public class MainActivity extends AppCompatActivity {
         PrayerNotificationScheduler.ensureChannel(this);
         setupBackHandling();
         webView.loadUrl("https://appassets.androidplatform.net/assets/index.html");
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        pendingLaunchAction = extractLaunchAction(intent);
+        deliverPendingLaunchAction();
     }
 
     private void setupBackHandling() {
@@ -150,6 +164,22 @@ public class MainActivity extends AppCompatActivity {
                 webView.evaluateJavascript(script, null);
             }
         });
+    }
+
+    private String extractLaunchAction(Intent intent) {
+        return intent == null ? null : intent.getStringExtra("launchAction");
+    }
+
+    private void deliverPendingLaunchAction() {
+        if (pendingLaunchAction == null || webView == null) {
+            return;
+        }
+
+        final String action = pendingLaunchAction;
+        pendingLaunchAction = null;
+        if ("open_prayer".equals(action)) {
+            runJavascript("if (window.openModal) { window.openModal('modal-prayer-times'); }");
+        }
     }
 
     private String quote(String raw) {
@@ -314,6 +344,11 @@ public class MainActivity extends AppCompatActivity {
         @JavascriptInterface
         public void cancelPrayerNotifications() {
             PrayerNotificationScheduler.cancelAll(MainActivity.this);
+        }
+
+        @JavascriptInterface
+        public String getPrayerNotificationStatus() {
+            return PrayerNotificationScheduler.getStatusJson(MainActivity.this);
         }
 
         @JavascriptInterface

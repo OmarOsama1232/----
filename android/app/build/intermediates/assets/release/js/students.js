@@ -39,15 +39,21 @@ function saveNewStudent() {
   const student = {
     id: crypto.randomUUID(),
     name: name,
-    currentMemorization: {
+    currentHifz: {
       surah: '',
       surahNumber: 0,
-      details: ''
+      details: '',
+      from: '',
+      to: '',
+      isFull: false
     },
-    revision: {
+    currentReview: {
       surah: '',
       surahNumber: 0,
-      details: ''
+      details: '',
+      from: '',
+      to: '',
+      isFull: false
     },
     partsMemorized: 0,
     createdAt: new Date().toISOString()
@@ -60,9 +66,7 @@ function saveNewStudent() {
   closeModal('modal-add-student');
   
   // إعادة رسم الواجهة
-  renderStudentsTable();
-  updateDashboardCards();
-  renderWeeklyReport();
+  refreshMainViews();
   
   showToast(`تمت إضافة الطالب "${name}" بنجاح`);
 }
@@ -79,17 +83,39 @@ function openEditStudentModal(studentId) {
   const student = getStudentById(studentId);
   if (!student) return;
   
-  const input = document.getElementById('edit-student-name');
+  const inputName = document.getElementById('edit-student-name');
   const hiddenId = document.getElementById('edit-student-id');
   
-  if (input && hiddenId) {
-    input.value = student.name;
+  if (inputName && hiddenId) {
+    inputName.value = student.name;
     hiddenId.value = student.id;
+  }
+  
+  // Hifz
+  const memSurah = document.getElementById('edit-mem-surah');
+  if (memSurah && document.getElementById('edit-mem-from')) {
+    memSurah.innerHTML = buildSurahSelect('', student.currentHifz?.surahNumber || 0).replace('<select', '<select id="edit-mem-surah" class="modal-input" style="margin-bottom:0;"').replace('</select>', '');
+    document.getElementById('edit-mem-from').value = student.currentHifz?.from || '';
+    document.getElementById('edit-mem-to').value = student.currentHifz?.to || '';
+    document.getElementById('edit-mem-full').checked = student.currentHifz?.isFull || false;
+    document.getElementById('edit-mem-from').disabled = student.currentHifz?.isFull || false;
+    document.getElementById('edit-mem-to').disabled = student.currentHifz?.isFull || false;
+  }
+  
+  // Review
+  const revSurah = document.getElementById('edit-rev-surah');
+  if (revSurah && document.getElementById('edit-rev-from')) {
+    revSurah.innerHTML = buildSurahSelect('', student.currentReview?.surahNumber || 0).replace('<select', '<select id="edit-rev-surah" class="modal-input" style="margin-bottom:0;"').replace('</select>', '');
+    document.getElementById('edit-rev-from').value = student.currentReview?.from || '';
+    document.getElementById('edit-rev-to').value = student.currentReview?.to || '';
+    document.getElementById('edit-rev-full').checked = student.currentReview?.isFull || false;
+    document.getElementById('edit-rev-from').disabled = student.currentReview?.isFull || false;
+    document.getElementById('edit-rev-to').disabled = student.currentReview?.isFull || false;
   }
   
   openModal('modal-edit-student');
   setTimeout(() => {
-    if (input) input.focus();
+    if (inputName) inputName.focus();
   }, 100);
 }
 
@@ -97,9 +123,9 @@ function openEditStudentModal(studentId) {
  * حفظ تعديل اسم الطالب
  */
 function saveEditStudent() {
-  const input = document.getElementById('edit-student-name');
+  const inputName = document.getElementById('edit-student-name');
   const hiddenId = document.getElementById('edit-student-id');
-  const name = input.value.trim();
+  const name = inputName.value.trim();
   const studentId = hiddenId.value;
   
   if (!name) {
@@ -111,11 +137,43 @@ function saveEditStudent() {
   if (!student) return;
   
   student.name = name;
+  
+  // Save Hifz
+  const memSurahNum = parseInt(document.getElementById('edit-mem-surah')?.value) || 0;
+  const memSurahName = memSurahNum ? SURAHS.find(s => s.number === memSurahNum)?.name : '';
+  const memFrom = document.getElementById('edit-mem-from')?.value || '';
+  const memTo = document.getElementById('edit-mem-to')?.value || '';
+  const memFull = document.getElementById('edit-mem-full')?.checked || false;
+  
+  student.currentHifz = {
+    surah: memSurahName,
+    surahNumber: memSurahNum,
+    from: memFrom,
+    to: memTo,
+    isFull: memFull,
+    details: buildDetailsText(memFrom, memTo, memFull)
+  };
+  
+  // Save Review
+  const revSurahNum = parseInt(document.getElementById('edit-rev-surah')?.value) || 0;
+  const revSurahName = revSurahNum ? SURAHS.find(s => s.number === revSurahNum)?.name : '';
+  const revFrom = document.getElementById('edit-rev-from')?.value || '';
+  const revTo = document.getElementById('edit-rev-to')?.value || '';
+  const revFull = document.getElementById('edit-rev-full')?.checked || false;
+  
+  student.currentReview = {
+    surah: revSurahName,
+    surahNumber: revSurahNum,
+    from: revFrom,
+    to: revTo,
+    isFull: revFull,
+    details: buildDetailsText(revFrom, revTo, revFull)
+  };
+
   updateStudent(student);
   
   closeModal('modal-edit-student');
-  renderStudentsTable();
-  renderWeeklyReport();
+  refreshMainViews();
   
   showToast(`تم تعديل اسم الطالب بنجاح`);
 }
@@ -141,9 +199,7 @@ async function confirmDeleteStudent(studentId) {
 
   if (confirmed) {
     deleteStudent(studentId);
-    renderStudentsTable();
-    updateDashboardCards();
-    renderWeeklyReport();
+    refreshMainViews();
     showToast(`تم حذف الطالب "${student.name}" وجميع سجلاته (${recordsCount} سجل)`);
   }
 }
@@ -161,7 +217,9 @@ function saveMemorizationInline(studentId) {
   if (!row) return;
   
   const surahSelect = row.querySelector('.mem-surah-select');
-  const detailsInput = row.querySelector('.mem-details-input');
+  const fromInput = row.querySelector('.mem-from');
+  const toInput = row.querySelector('.mem-to');
+  const fullCheck = row.querySelector('.mem-full');
   
   const student = getStudentById(studentId);
   if (!student) return;
@@ -169,14 +227,22 @@ function saveMemorizationInline(studentId) {
   const surahNumber = parseInt(surahSelect.value) || 0;
   const surah = SURAHS.find(s => s.number === surahNumber);
   
-  student.currentMemorization = {
+  const fromVal = fromInput.value;
+  const toVal = toInput.value;
+  const isFull = fullCheck.checked;
+  
+  student.currentHifz = {
     surah: surah ? surah.name : '',
     surahNumber: surahNumber,
-    details: detailsInput.value.trim()
+    from: fromVal,
+    to: toVal,
+    isFull: isFull,
+    details: buildDetailsText(fromVal, toVal, isFull)
   };
   
   updateStudent(student);
   showToast('تم حفظ الحفظ الحالي');
+  renderStudentsTable(); // إعادة الرسم لإظهار النص الجديد
 }
 
 /**
@@ -188,7 +254,9 @@ function saveRevisionInline(studentId) {
   if (!row) return;
   
   const surahSelect = row.querySelector('.rev-surah-select');
-  const detailsInput = row.querySelector('.rev-details-input');
+  const fromInput = row.querySelector('.rev-from');
+  const toInput = row.querySelector('.rev-to');
+  const fullCheck = row.querySelector('.rev-full');
   
   const student = getStudentById(studentId);
   if (!student) return;
@@ -196,14 +264,22 @@ function saveRevisionInline(studentId) {
   const surahNumber = parseInt(surahSelect.value) || 0;
   const surah = SURAHS.find(s => s.number === surahNumber);
   
-  student.revision = {
+  const fromVal = fromInput.value;
+  const toVal = toInput.value;
+  const isFull = fullCheck.checked;
+  
+  student.currentReview = {
     surah: surah ? surah.name : '',
     surahNumber: surahNumber,
-    details: detailsInput.value.trim()
+    from: fromVal,
+    to: toVal,
+    isFull: isFull,
+    details: buildDetailsText(fromVal, toVal, isFull)
   };
   
   updateStudent(student);
   showToast('تم حفظ المراجعة');
+  renderStudentsTable(); // إعادة الرسم لإظهار النص الجديد
 }
 
 // ═══════════════════════════════════
@@ -361,25 +437,35 @@ function renderStudentsTable(filteredStudents) {
           <a href="#" class="student-name-link" onclick="openStudentProfile('${student.id}'); return false;">${student.name}</a>
         </td>
         <td class="col-memorization">
-          <div class="inline-edit-group">
-            ${buildSurahSelect('mem-surah', student.currentMemorization.surahNumber, 'mem-surah-select')}
-            <input type="text" class="mem-details-input inline-input" 
-                   value="${student.currentMemorization.details}" 
-                   placeholder="التفاصيل...">
-            <button class="btn-save-inline" onclick="saveMemorizationInline('${student.id}')" title="حفظ">
-              <i class="fas fa-save"></i>
-            </button>
+          <div class="hifz-display" id="mem-disp-${student.id}" style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+            <span class="hifz-text" style="font-weight:600; font-size:13px; color:var(--color-primary);">${formatHifzText(student.currentHifz)}</span>
+            <button class="btn-action" onclick="toggleEditDisplay('${student.id}', 'mem')" title="تعديل" style="padding:4px; font-size:11px; background:none; border:none; color:var(--color-gray);"><i class="fas fa-edit"></i></button>
+          </div>
+          <div class="inline-edit-group" id="mem-edit-${student.id}" style="display:none; flex-direction:column; align-items:start; gap:6px;">
+            ${buildSurahSelect('mem-surah', student.currentHifz?.surahNumber || 0, 'mem-surah-select inline-input')}
+            <div class="ayah-group-container" style="display:flex; gap:4px; align-items:center; flex-wrap:wrap;">
+               <input type="number" class="mem-from inline-input" placeholder="من" style="width:40px; padding:4px; text-align:center;" value="${student.currentHifz?.from || ''}" ${student.currentHifz?.isFull ? 'disabled' : ''}>
+               <input type="number" class="mem-to inline-input" placeholder="إلى" style="width:40px; padding:4px; text-align:center;" value="${student.currentHifz?.to || ''}" ${student.currentHifz?.isFull ? 'disabled' : ''}>
+               <label style="font-size:11px; display:flex; align-items:center; gap:2px;"><input type="checkbox" class="mem-full" onchange="toggleAyahInputs(this)" ${student.currentHifz?.isFull ? 'checked' : ''}> كاملة</label>
+               <button class="btn-save-inline" onclick="saveMemorizationInline('${student.id}')" title="حفظ" style="margin-right:auto;"><i class="fas fa-save"></i></button>
+               <button class="btn-save-inline" onclick="toggleEditDisplay('${student.id}', 'mem')" title="إلغاء" style="background:#ef4444;"><i class="fas fa-times"></i></button>
+            </div>
           </div>
         </td>
         <td class="col-revision">
-          <div class="inline-edit-group">
-            ${buildSurahSelect('rev-surah', student.revision.surahNumber, 'rev-surah-select')}
-            <input type="text" class="rev-details-input inline-input" 
-                   value="${student.revision.details}" 
-                   placeholder="التفاصيل...">
-            <button class="btn-save-inline" onclick="saveRevisionInline('${student.id}')" title="حفظ">
-              <i class="fas fa-save"></i>
-            </button>
+          <div class="hifz-display" id="rev-disp-${student.id}" style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+            <span class="hifz-text" style="font-weight:600; font-size:13px; color:var(--color-text);">${formatHifzText(student.currentReview)}</span>
+            <button class="btn-action" onclick="toggleEditDisplay('${student.id}', 'rev')" title="تعديل" style="padding:4px; font-size:11px; background:none; border:none; color:var(--color-gray);"><i class="fas fa-edit"></i></button>
+          </div>
+          <div class="inline-edit-group" id="rev-edit-${student.id}" style="display:none; flex-direction:column; align-items:start; gap:6px;">
+            ${buildSurahSelect('rev-surah', student.currentReview?.surahNumber || 0, 'rev-surah-select inline-input')}
+            <div class="ayah-group-container" style="display:flex; gap:4px; align-items:center; flex-wrap:wrap;">
+               <input type="number" class="rev-from inline-input" placeholder="من" style="width:40px; padding:4px; text-align:center;" value="${student.currentReview?.from || ''}" ${student.currentReview?.isFull ? 'disabled' : ''}>
+               <input type="number" class="rev-to inline-input" placeholder="إلى" style="width:40px; padding:4px; text-align:center;" value="${student.currentReview?.to || ''}" ${student.currentReview?.isFull ? 'disabled' : ''}>
+               <label style="font-size:11px; display:flex; align-items:center; gap:2px;"><input type="checkbox" class="rev-full" onchange="toggleAyahInputs(this)" ${student.currentReview?.isFull ? 'checked' : ''}> كاملة</label>
+               <button class="btn-save-inline" onclick="saveRevisionInline('${student.id}')" title="حفظ" style="margin-right:auto;"><i class="fas fa-save"></i></button>
+               <button class="btn-save-inline" onclick="toggleEditDisplay('${student.id}', 'rev')" title="إلغاء" style="background:#ef4444;"><i class="fas fa-times"></i></button>
+            </div>
           </div>
         </td>
         <td class="col-parts">
@@ -428,4 +514,61 @@ function renderStudentsTable(filteredStudents) {
   });
   
   tbody.innerHTML = html;
+}
+
+// ═══════════════════════════════════
+// ■ مساعدة للنصوص
+// ═══════════════════════════════════
+
+function buildDetailsText(from, to, isFull) {
+  if (isFull) return 'كاملة';
+  if (from && to) return `الآيات ${from}-${to}`;
+  if (from) return `من آية ${from}`;
+  if (to) return `إلى آية ${to}`;
+  return '';
+}
+
+function formatHifzText(hifzObj) {
+  if (!hifzObj || !hifzObj.surah) return 'لم يحدد';
+  
+  if (hifzObj.isFull) {
+    return `${hifzObj.surah} (كاملة)`;
+  } else if (hifzObj.from && hifzObj.to) {
+    return `${hifzObj.surah} (${hifzObj.from}-${hifzObj.to})`;
+  } else if (hifzObj.from) {
+    return `${hifzObj.surah} (من ${hifzObj.from})`;
+  } else if (hifzObj.to) {
+    return `${hifzObj.surah} (إلى ${hifzObj.to})`;
+  } else if (hifzObj.details) {
+    return `${hifzObj.surah} (${hifzObj.details})`; // legacy fallback
+  } else {
+    return hifzObj.surah;
+  }
+}
+
+function toggleAyahInputs(checkbox) {
+  const container = checkbox.closest('.ayah-group-container');
+  if (!container) return;
+  const inputs = container.querySelectorAll('input[type="number"]');
+  inputs.forEach(input => {
+    input.disabled = checkbox.checked;
+  });
+}
+
+function toggleEditDisplay(studentId, type) {
+  const dispId = `${type}-disp-${studentId}`;
+  const editId = `${type}-edit-${studentId}`;
+  
+  const disp = document.getElementById(dispId);
+  const edit = document.getElementById(editId);
+  
+  if (disp && edit) {
+    if (disp.style.display === 'none') {
+      disp.style.display = 'flex';
+      edit.style.display = 'none';
+    } else {
+      disp.style.display = 'none';
+      edit.style.display = 'flex';
+    }
+  }
 }

@@ -32,6 +32,9 @@ public final class PrayerNotificationScheduler {
     public static final String KEY_LNG = "lng";
     public static final String KEY_REMINDER_MINUTES = "reminder_minutes";
     public static final String KEY_ENABLED = "enabled";
+    public static final String KEY_LAST_SCHEDULED_AT = "last_scheduled_at";
+    public static final String KEY_SCHEDULED_COUNT = "scheduled_count";
+    public static final String KEY_LAST_ERROR = "last_error";
 
     public static final String CHANNEL_ID = "prayer_reminders";
     public static final String CHANNEL_NAME = "تذكيرات الصلاة";
@@ -80,11 +83,15 @@ public final class PrayerNotificationScheduler {
         JSONObject payload = new JSONObject(scheduleJson);
         JSONObject location = payload.optJSONObject("location");
         int reminderMinutes = payload.optInt("reminderMinutes", 10);
+        int scheduledCount = schedulePayloadAlarms(context, payload);
 
         SharedPreferences.Editor editor = prefs.edit()
                 .putString(KEY_SCHEDULE_JSON, scheduleJson)
                 .putInt(KEY_REMINDER_MINUTES, reminderMinutes)
-                .putBoolean(KEY_ENABLED, true);
+                .putBoolean(KEY_ENABLED, true)
+                .putString(KEY_LAST_SCHEDULED_AT, new Date().toInstant().toString())
+                .putInt(KEY_SCHEDULED_COUNT, scheduledCount)
+                .putString(KEY_LAST_ERROR, "");
 
         if (location != null) {
             editor.putString(KEY_LAT, String.valueOf(location.optDouble("lat", 0.0)));
@@ -92,7 +99,6 @@ public final class PrayerNotificationScheduler {
         }
         editor.apply();
 
-        schedulePayloadAlarms(context, payload);
         scheduleDailyResync(context);
     }
 
@@ -120,9 +126,15 @@ public final class PrayerNotificationScheduler {
 
         try {
             ensureChannel(context);
-            schedulePayloadAlarms(context, new JSONObject(scheduleJson));
+            int scheduledCount = schedulePayloadAlarms(context, new JSONObject(scheduleJson));
+            prefs.edit()
+                    .putInt(KEY_SCHEDULED_COUNT, scheduledCount)
+                    .putString(KEY_LAST_ERROR, "")
+                    .putString(KEY_LAST_SCHEDULED_AT, new Date().toInstant().toString())
+                    .apply();
             scheduleDailyResync(context);
-        } catch (Exception ignored) {
+        } catch (Exception error) {
+            prefs.edit().putString(KEY_LAST_ERROR, safeError(error)).apply();
         }
     }
 
@@ -140,17 +152,33 @@ public final class PrayerNotificationScheduler {
                 int reminderMinutes = prefs.getInt(KEY_REMINDER_MINUTES, 10);
                 String payload = fetchSchedulePayload(lat, lng, reminderMinutes);
                 scheduleFromPayload(appContext, payload);
-            } catch (Exception ignored) {
+            } catch (Exception error) {
+                prefs.edit().putString(KEY_LAST_ERROR, safeError(error)).apply();
             }
         }).start();
     }
 
-    private static void schedulePayloadAlarms(Context context, JSONObject payload) throws Exception {
+    public static String getStatusJson(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
+        JSONObject status = new JSONObject();
+        try {
+            status.put("enabled", prefs.getBoolean(KEY_ENABLED, false));
+            status.put("scheduledPrayerCount", prefs.getInt(KEY_SCHEDULED_COUNT, 0));
+            status.put("lastScheduledAt", prefs.getString(KEY_LAST_SCHEDULED_AT, null));
+            status.put("lastError", prefs.getString(KEY_LAST_ERROR, ""));
+            status.put("reminderMinutes", prefs.getInt(KEY_REMINDER_MINUTES, 10));
+        } catch (Exception ignored) {
+        }
+        return status.toString();
+    }
+
+    private static int schedulePayloadAlarms(Context context, JSONObject payload) throws Exception {
         JSONArray days = payload.optJSONArray("days");
         if (days == null) {
-            return;
+            return 0;
         }
 
+        int scheduledCount = 0;
         for (int i = 0; i < days.length(); i++) {
             JSONObject day = days.optJSONObject(i);
             if (day == null) {
@@ -180,8 +208,11 @@ public final class PrayerNotificationScheduler {
                 String title = "تذكير الصلاة";
                 String body = "اقترب وقت صلاة " + name;
                 scheduleAlarm(context, requestCode, triggerAt, title, body);
+                scheduledCount += 1;
             }
         }
+
+        return scheduledCount;
     }
 
     private static void scheduleAlarm(Context context, int requestCode, long triggerAt, String title, String body) {
@@ -294,6 +325,11 @@ public final class PrayerNotificationScheduler {
         if (clearPrefs) {
             prefs.edit().clear().apply();
             NotificationManagerCompat.from(context).cancelAll();
+        } else {
+            prefs.edit()
+                    .putInt(KEY_SCHEDULED_COUNT, 0)
+                    .putString(KEY_LAST_SCHEDULED_AT, null)
+                    .apply();
         }
     }
 
@@ -421,5 +457,10 @@ public final class PrayerNotificationScheduler {
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US);
         format.setTimeZone(TimeZone.getTimeZone("UTC"));
         return format.format(date);
+    }
+
+    private static String safeError(Exception error) {
+        String message = error.getMessage();
+        return message == null || message.isEmpty() ? "unknown_error" : message;
     }
 }

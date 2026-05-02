@@ -61,22 +61,20 @@
                     }
                 },
                 {
-                    "source": "C:\\Users\\Omar Osama\\Downloads\\حلقة\\android\\app\\src\\main\\res\\values\\themes.xml",
+                    "source": "C:\\Users\\Omar Osama\\Downloads\\Halqatna-AndroidStudio\\app\\src\\main\\res\\values\\colors.xml",
                     "from": {
-                        "startLines": "1,6",
-                        "startColumns": "4,4",
-                        "startOffsets": "64,354",
-                        "endLines": "5,10",
-                        "endColumns": "12,12",
-                        "endOffsets": "348,622"
+                        "startLines": "1,2,3",
+                        "startColumns": "4,4,4",
+                        "startOffsets": "16,63,110",
+                        "endColumns": "46,46,41",
+                        "endOffsets": "58,105,147"
                     },
                     "to": {
-                        "startLines": "6288,6293",
-                        "startColumns": "4,4",
-                        "startOffsets": "441962,442247",
-                        "endLines": "6292,6297",
-                        "endColumns": "12,12",
-                        "endOffsets": "442242,442511"
+                        "startLines": "864,865,878",
+                        "startColumns": "4,4,4",
+                        "startOffsets": "51831,51878,52743",
+                        "endColumns": "46,46,41",
+                        "endOffsets": "51873,51920,52780"
                     }
                 },
                 {
@@ -298,6 +296,25 @@
                     }
                 },
                 {
+                    "source": "C:\\Users\\Omar Osama\\Downloads\\Halqatna-AndroidStudio\\app\\src\\main\\res\\values\\themes.xml",
+                    "from": {
+                        "startLines": "1,6",
+                        "startColumns": "4,4",
+                        "startOffsets": "64,354",
+                        "endLines": "5,10",
+                        "endColumns": "12,12",
+                        "endOffsets": "348,622"
+                    },
+                    "to": {
+                        "startLines": "6288,6293",
+                        "startColumns": "4,4",
+                        "startOffsets": "441962,442247",
+                        "endLines": "6292,6297",
+                        "endColumns": "12,12",
+                        "endOffsets": "442242,442511"
+                    }
+                },
+                {
                     "source": "C:\\Users\\Omar Osama\\.gradle\\caches\\8.14.3\\transforms\\a4ef4c29dbeed1fa540ce706eafac04f\\transformed\\recyclerview-1.1.0\\res\\values\\values.xml",
                     "from": {
                         "startLines": "2,3,4,5,6,7,8,9,10",
@@ -317,40 +334,6 @@
                     }
                 },
                 {
-                    "source": "C:\\Users\\Omar Osama\\Downloads\\حلقة\\android\\app\\src\\main\\res\\values\\colors.xml",
-                    "from": {
-                        "startLines": "1,2,3",
-                        "startColumns": "4,4,4",
-                        "startOffsets": "16,63,110",
-                        "endColumns": "46,46,41",
-                        "endOffsets": "58,105,147"
-                    },
-                    "to": {
-                        "startLines": "864,865,878",
-                        "startColumns": "4,4,4",
-                        "startOffsets": "51831,51878,52743",
-                        "endColumns": "46,46,41",
-                        "endOffsets": "51873,51920,52780"
-                    }
-                },
-                {
-                    "source": "C:\\Users\\Omar Osama\\Downloads\\حلقة\\android\\app\\src\\main\\res\\values\\strings.xml",
-                    "from": {
-                        "startLines": "1",
-                        "startColumns": "4",
-                        "startOffsets": "17",
-                        "endColumns": "45",
-                        "endOffsets": "58"
-                    },
-                    "to": {
-                        "startLines": "1886",
-                        "startColumns": "4",
-                        "startOffsets": "126604",
-                        "endColumns": "45",
-                        "endOffsets": "126645"
-                    }
-                },
-                {
                     "source": "C:\\Users\\Omar Osama\\.gradle\\caches\\8.14.3\\transforms\\2b003e2fe729afc84a0c865723a4c048\\transformed\\lifecycle-viewmodel-2.6.1\\res\\values\\values.xml",
                     "from": {
                         "startLines": "2",
@@ -365,6 +348,23 @@
                         "startOffsets": "119705",
                         "endColumns": "49",
                         "endOffsets": "119750"
+                    }
+                },
+                {
+                    "source": "C:\\Users\\Omar Osama\\Downloads\\Halqatna-AndroidStudio\\app\\src\\main\\res\\values\\strings.xml",
+                    "from": {
+                        "startLines": "1",
+                        "startColumns": "4",
+                        "startOffsets": "17",
+                        "endColumns": "45",
+                        "endOffsets": "58"
+                    },
+                    "to": {
+                        "startLines": "1886",
+                        "startColumns": "4",
+                        "startOffsets": "126604",
+                        "endColumns": "45",
+                        "endOffsets": "126645"
                     }
                 }
             ]

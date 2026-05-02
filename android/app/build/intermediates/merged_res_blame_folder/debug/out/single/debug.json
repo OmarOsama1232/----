@@ -1,0 +1,26 @@
+[
+    {
+        "merged": "com.halqatna.app-merged_res-32:/drawable_ic_launcher_foreground.xml.flat",
+        "source": "com.halqatna.app-main-34:/drawable/ic_launcher_foreground.xml"
+    },
+    {
+        "merged": "com.halqatna.app-merged_res-32:/layout_activity_main.xml.flat",
+        "source": "com.halqatna.app-main-34:/layout/activity_main.xml"
+    },
+    {
+        "merged": "com.halqatna.app-merged_res-32:/mipmap-anydpi-v26_ic_launcher_round.xml.flat",
+        "source": "com.halqatna.app-main-34:/mipmap-anydpi-v26/ic_launcher_round.xml"
+    },
+    {
+        "merged": "com.halqatna.app-merged_res-32:/drawable_ic_launcher_background.xml.flat",
+        "source": "com.halqatna.app-main-34:/drawable/ic_launcher_background.xml"
+    },
+    {
+        "merged": "com.halqatna.app-merged_res-32:/drawable_ic_prayer_notification.xml.flat",
+        "source": "com.halqatna.app-main-34:/drawable/ic_prayer_notification.xml"
+    },
+    {
+        "merged": "com.halqatna.app-merged_res-32:/mipmap-anydpi-v26_ic_launcher.xml.flat",
+        "source": "com.halqatna.app-main-34:/mipmap-anydpi-v26/ic_launcher.xml"
+    }
+]
