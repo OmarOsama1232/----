@@ -202,8 +202,8 @@ function setupImport() {
     reader.onload = function(evt) {
       try {
         var data = JSON.parse(evt.target.result);
-        if (data.students)      localStorage.setItem('halaqah_students',      JSON.stringify(data.students));
-        if (data.dailyRecords)  localStorage.setItem('halaqah_daily_records', JSON.stringify(data.dailyRecords));
+        if (data.students)      saveToStorage('students',      data.students);
+        if (data.dailyRecords)  saveToStorage('dailyRecords',  data.dailyRecords);
         showToast('تم استيراد البيانات بنجاح');
         renderStudentsCards();
         updateDashboardCards();
@@ -221,8 +221,8 @@ function setupImport() {
 
 function exportToJSON() {
   var data = {
-    students:     JSON.parse(localStorage.getItem('halaqah_students')      || '[]'),
-    dailyRecords: JSON.parse(localStorage.getItem('halaqah_daily_records') || '[]'),
+    students:     getAllStudents(),
+    dailyRecords: getDailyRecords(),
     exportedAt: new Date().toISOString()
   };
   var blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -301,8 +301,8 @@ function setupAdminTools() {
   if (btnDel) btnDel.addEventListener('click', async function() {
     var ok = await showConfirm('هل أنت متأكد من حذف جميع البيانات؟\nلا يمكن التراجع عن هذا الإجراء.', 'تحذير: حذف كامل');
     if (ok) {
-      localStorage.removeItem('halaqah_students');
-      localStorage.removeItem('halaqah_daily_records');
+      localStorage.removeItem('students');
+      localStorage.removeItem('dailyRecords');
       renderStudentsCards();
       updateDashboardCards();
       renderHonorBoardCards();

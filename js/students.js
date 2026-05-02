@@ -196,16 +196,19 @@ async function confirmDeleteStudent(studentId) {
   const recordsCount = getRecordsForStudent(studentId).length;
 
   const confirmed = await showConfirm(
-    `هل أنت متأكد من حذف الطالب "${student.name}"؟\nسيتم حذف جميع سجلاته (${recordsCount} سجل) نهائياً!\nلا يمكن التراجع عن هذا الإجراء.`,
-    'تأكيد حذف الطالب'
+    `هل أنت متأكد من حذف الطالب "${student.name}"؟\nسيتم إزالة بياناته فقط، والسجلات (${recordsCount} سجل) ستبقى محفوظة.`,
+    'حذف الطالب'
   );
 
   if (confirmed) {
-    deleteStudent(studentId);
+    /* حذف الملف الشخصي فقط — السجلات تبقى محفوظة */
+    var students = getAllStudents();
+    var filtered = students.filter(function(s) { return s.id !== studentId; });
+    saveToStorage('students', filtered);
     renderStudentsTable();
     updateDashboardCards();
     renderWeeklyReport();
-    showToast(`تم حذف الطالب "${student.name}" وجميع سجلاته (${recordsCount} سجل)`);
+    showToast(`تم حذف "${student.name}" والسجلات محفوظة 📂`);
   }
 }
 
