@@ -1272,3 +1272,216 @@ input, select, button, textarea { font-family: 'Cairo', sans-serif; }
   .prayer-time-item i { font-size: 20px; }
   .prayer-time-value { font-size: 16px; }
 }
+
+/* ══════════════════════════════════
+   إعدادات الإشعارات - Notification UI
+   ══════════════════════════════════ */
+.notif-settings-section {
+  margin-top: 20px;
+  padding: 16px;
+  background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+  -ms-flex-direction: column;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.notif-settings-header {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.notif-settings-header i {
+  font-size: 18px;
+  color: var(--color-accent);
+}
+
+/* شارة الحالة */
+.notif-status-badge {
+  margin-right: auto;
+  margin-left: 0;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+}
+[dir="rtl"] .notif-status-badge {
+  margin-right: auto;
+  margin-left: 0;
+}
+
+.notif-active {
+  background: #dcfce7;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+}
+.notif-inactive {
+  background: #f3f4f6;
+  color: #6b7280;
+  border: 1px solid #e5e7eb;
+}
+.notif-denied {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+.notif-unsupported {
+  background: #fffbeb;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}
+
+/* صف التذكير */
+.notif-reminder-row {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  gap: 12px;
+  -ms-flex-wrap: wrap;
+  flex-wrap: wrap;
+}
+
+.notif-label {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-light);
+  -webkit-box-flex: 1;
+  -ms-flex: 1;
+  flex: 1;
+  cursor: default;
+}
+
+.notif-label i { color: var(--color-primary); font-size: 14px; }
+
+.notif-select {
+  padding: 8px 12px;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-family: 'Cairo', sans-serif;
+  background: var(--color-white);
+  color: var(--color-text);
+  cursor: pointer;
+  min-width: 120px;
+  -webkit-transition: border-color var(--transition);
+  transition: border-color var(--transition);
+}
+.notif-select:focus {
+  outline: none;
+  border-color: var(--color-primary-light);
+}
+.notif-select:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* أزرار الإشعارات */
+.notif-actions {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  gap: 10px;
+}
+
+.notif-btn {
+  display: -webkit-inline-box;
+  display: -ms-inline-flexbox;
+  display: inline-flex;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 600;
+  font-family: 'Cairo', sans-serif;
+  cursor: pointer;
+  -webkit-transition: all var(--transition);
+  transition: all var(--transition);
+  min-height: 44px;
+  touch-action: manipulation;
+}
+
+.notif-btn-enable {
+  background: -webkit-linear-gradient(135deg, var(--color-primary-light), var(--color-primary));
+  background: linear-gradient(135deg, var(--color-primary-light), var(--color-primary));
+  color: #fff;
+  -webkit-box-shadow: 0 3px 10px rgba(22,101,52,0.25);
+  box-shadow: 0 3px 10px rgba(22,101,52,0.25);
+}
+.notif-btn-enable:hover {
+  -webkit-transform: translateY(-1px);
+  transform: translateY(-1px);
+  -webkit-box-shadow: 0 5px 15px rgba(22,101,52,0.35);
+  box-shadow: 0 5px 15px rgba(22,101,52,0.35);
+}
+.notif-btn-enable:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  -webkit-transform: none;
+  transform: none;
+}
+
+.notif-btn-disable {
+  background: -webkit-linear-gradient(135deg, #f87171, var(--color-danger));
+  background: linear-gradient(135deg, #f87171, var(--color-danger));
+  color: #fff;
+  -webkit-box-shadow: 0 3px 10px rgba(220,38,38,0.2);
+  box-shadow: 0 3px 10px rgba(220,38,38,0.2);
+}
+.notif-btn-disable:hover {
+  -webkit-transform: translateY(-1px);
+  transform: translateY(-1px);
+  -webkit-box-shadow: 0 5px 15px rgba(220,38,38,0.35);
+  box-shadow: 0 5px 15px rgba(220,38,38,0.35);
+}
+
+/* تلميح إرشادي */
+.notif-hint {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: flex-start;
+  -ms-flex-align: flex-start;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--color-gray);
+  line-height: 1.6;
+  padding: 8px 12px;
+  background: rgba(255,255,255,0.7);
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(200,230,201,0.6);
+}
+.notif-hint i {
+  color: var(--color-primary-light);
+  margin-top: 2px;
+  -ms-flex-negative: 0;
+  flex-shrink: 0;
+}

@@ -4,12 +4,13 @@
   "description": "تطبيق متكامل لإدارة حلقات تحفيظ القرآن الكريم",
   "start_url": "/index.html",
   "display": "standalone",
-  "orientation": "portrait",
+  "orientation": "any",
   "background_color": "#eaf7e6",
   "theme_color": "#1f5e3a",
   "lang": "ar",
   "dir": "rtl",
   "categories": ["education", "lifestyle"],
+  "permissions": ["notifications"],
   "icons": [
     {
       "src": "icon-512.png",
@@ -17,5 +18,8 @@
       "type": "image/png",
       "purpose": "any maskable"
     }
-  ]
+  ],
+  "screenshots": [],
+  "prefer_related_applications": false,
+  "related_applications": []
 }
