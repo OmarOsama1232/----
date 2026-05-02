@@ -1,720 +1,194 @@
 /* ═══════════════════════════════════════════════════
-   responsive.css — حلقتنا · Mobile-First Responsive
-   دعم: 240px → 1400px | Android 5–16 | Foldables
+   responsive.css — حلقتنا v4
+   240px → 1400px | Android 5+ | iOS | Foldables
    ═══════════════════════════════════════════════════ */
 
-/* ══════════════════════════════════
-   ■ إعدادات اللمس والأجهزة المحمولة
-   ══════════════════════════════════ */
-* {
-  -webkit-tap-highlight-color: transparent;
-  -webkit-text-size-adjust: 100%;
-  -ms-text-size-adjust: 100%;
-}
+* { -webkit-tap-highlight-color: transparent; -webkit-text-size-adjust: 100%; }
 
-button, a, select, input, label,
-.checkbox-wrapper, .honor-card, .dash-card, .prayer-card {
-  touch-action: manipulation;
-  -webkit-touch-callout: none;
-}
-
-/* تأثير الضغط على الأجهزة المحمولة */
-button:active,
-.btn-action:active,
-.btn-add:active,
-.btn-primary:active,
-.btn-secondary:active,
-.btn-save-attendance:active,
-.btn-admin:active,
-.btn-header:active,
-.btn-chart:active,
-.notif-btn:active {
-  opacity: .75;
-  -webkit-transform: scale(.96) !important;
-  transform: scale(.96) !important;
-  -webkit-transition: all .08s ease !important;
-  transition: all .08s ease !important;
-}
-
-/* ══════════════════════════════════
-   ■ Safe Area — شاشات Notch والحواف
-   ══════════════════════════════════ */
+/* ══════════════════════════ Safe Area ══════════════════════════ */
 body {
-  padding-top: env(safe-area-inset-top, 0px);
-  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-top: calc(var(--header-h) + env(safe-area-inset-top, 0px));
+  padding-bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom, 0px));
   padding-left: env(safe-area-inset-left, 0px);
   padding-right: env(safe-area-inset-right, 0px);
 }
 
-@supports not (padding-top: env(safe-area-inset-top)) {
-  body { padding-top: 0; padding-bottom: 0; padding-left: 0; padding-right: 0; }
+/* ══════════════════════════ Touch Feedback ══════════════════════════ */
+button:active, .student-card:active, .kpi-card:active,
+.honor-card:active, .attendance-cta:active {
+  opacity: .85;
+  transform: scale(.97) !important;
+  transition: all .08s ease !important;
 }
 
-/* ══════════════════════════════════
-   ■ @supports Fallbacks (CSS Grid → Flexbox)
-   ══════════════════════════════════ */
+/* Grid fallback (no CSS Grid) */
 @supports not (display: grid) {
-  .dashboard-cards {
-    display: -webkit-box;
-    display: -ms-flexbox;
-    display: flex;
-    -ms-flex-wrap: wrap;
-    flex-wrap: wrap;
-    gap: 16px;
+  .kpi-grid, .students-grid, .reports-kpi-grid, .reports-summary {
+    display: flex; flex-wrap: wrap; gap: 10px;
   }
-  .dashboard-cards .dash-card {
-    -webkit-box-flex: 1;
-    -ms-flex: 1 1 180px;
-    flex: 1 1 180px;
-    min-width: 180px;
-  }
-  .profile-stats-grid {
-    display: -webkit-box;
-    display: -ms-flexbox;
-    display: flex;
-    -ms-flex-wrap: wrap;
-    flex-wrap: wrap;
-    gap: 12px;
-  }
-  .profile-stats-grid .profile-stat-box {
-    -webkit-box-flex: 1;
-    -ms-flex: 1 1 130px;
-    flex: 1 1 130px;
-  }
-  .profile-layout {
-    display: -webkit-box;
-    display: -ms-flexbox;
-    display: flex;
-    -webkit-box-orient: vertical;
-    -webkit-box-direction: normal;
-    -ms-flex-direction: column;
-    flex-direction: column;
-  }
+  .kpi-grid > *, .students-grid > *, .reports-kpi-grid > * { flex: 1 1 150px; min-width: 150px; }
 }
 
-/* ══════════════════════════════════
-   ■ Backdrop-filter Fallback
-   ══════════════════════════════════ */
-@supports not ((-webkit-backdrop-filter: blur(6px)) or (backdrop-filter: blur(6px))) {
-  .modal-overlay  { background: rgba(0, 0, 0, .75); }
-  .btn-header     { background: rgba(255, 255, 255, .2); }
+/* ══════════════════════════ 240px – 319px ══════════════════════════ */
+@media (max-width: 319px) {
+  .page-wrap { padding: 10px 8px; }
+  .header-title { font-size: 15px; }
+  .header-date-wrap { display: none; }
+  .kpi-grid { grid-template-columns: 1fr; gap: 8px; }
+  .students-grid { grid-template-columns: 1fr; }
+  .kpi-value { font-size: 20px; }
+  .prayer-countdown { font-size: 22px; }
+  .btn-header-icon { width: 30px; height: 30px; font-size: 13px; }
 }
 
-/* ══════════════════════════════════
-   ■ Offline Banner
-   ══════════════════════════════════ */
-.offline-banner {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 9999;
-}
+/* ══════════════════════════ 320px – 480px (Mobile) ══════════════════════════ */
+@media (max-width: 480px) {
+  .page-wrap { padding: 12px 12px 20px; }
 
-/* ══════════════════════════════════
-   ■ 240px — Ultra Small (Watch / Tiny phone)
-   ══════════════════════════════════ */
-@media (max-width: 320px) {
-  .container { padding: 12px 10px; }
+  .header-title { font-size: clamp(16px, 4vw, 18px); }
+  .btn-header-icon, .btn-dark-mode { width: 34px; height: 34px; font-size: 14px; }
 
-  .header { padding: 10px 12px; gap: 6px; }
-  .header-title { font-size: 16px; }
-  .header-logo  { font-size: 22px; }
-  .header-center { display: none; }
+  .prayer-card { padding: 14px 16px; }
+  .prayer-countdown { font-size: clamp(22px, 5vw, 28px); letter-spacing: 1px; }
+  .prayer-name { font-size: 16px; }
+  .prayer-icon-wrap { width: 40px; height: 40px; font-size: 18px; }
 
-  .btn-header { padding: 6px 8px; font-size: 11px; }
-  .btn-header span { display: none; }
-  .btn-dark-mode { width: 32px; height: 32px; font-size: 13px; }
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .kpi-card { padding: 12px 10px; gap: 10px; }
+  .kpi-icon { width: 40px; height: 40px; font-size: 18px; }
+  .kpi-value { font-size: clamp(20px, 5vw, 24px); }
+  .kpi-label { font-size: 10px; }
 
-  .dashboard-cards {
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-  }
+  .honor-card { flex: 0 0 120px; }
+  .honor-name { font-size: 11px; }
 
-  .dash-card { padding: 12px 10px; gap: 10px; }
-  .dash-card-icon { width: 38px; height: 38px; font-size: 16px; }
-  .dash-card-value { font-size: 20px; }
-  .dash-card-label { font-size: 10px; }
+  .attendance-cta { padding: 14px 16px; gap: 12px; }
+  .attendance-cta-icon { width: 44px; height: 44px; font-size: 20px; }
+  .attendance-cta-title { font-size: 15px; }
 
-  .prayer-card { padding: 12px 14px; border-radius: 14px; }
-  .prayer-icon  { font-size: 20px; }
-  .prayer-name  { font-size: 14px; }
-  .prayer-countdown { font-size: 18px; letter-spacing: 1px; }
+  .students-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .card-avatar { width: 44px; height: 44px; font-size: 18px; }
+  .card-name { font-size: 13px; }
+  .card-info-row { font-size: 11px; }
 
-  .honor-cards { flex-direction: column; }
-  .honor-card  { min-width: 100%; }
+  .reports-kpi-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
 
-  .controls-bar { padding: 10px; flex-direction: column; }
-  .search-wrapper { min-width: 100%; }
-  .btn-add { width: 100%; justify-content: center; }
+  .charts-row-2 { grid-template-columns: 1fr; }
 
-  .btn-save-attendance { padding: 12px 24px; font-size: 14px; }
+  .reports-summary { grid-template-columns: 1fr; }
 
-  .modal-content { padding: 18px 14px; }
-  .modal-title   { font-size: 16px; }
-}
-
-/* ══════════════════════════════════
-   ■ 321px → 599px — Mobile
-   ══════════════════════════════════ */
-@media (max-width: 599px) {
-  .container { padding: 14px 14px; }
-
-  /* Header */
-  .header { padding: 12px 16px; position: relative; }
-  .header-title { font-size: clamp(17px, 4.5vw, 22px); }
-  .header-logo  { font-size: 26px; }
-
-  /* إخفاء نص أزرار الهيدر */
-  .btn-header span { display: none; }
-  .btn-header { padding: 8px 10px; min-width: 38px; min-height: 38px; justify-content: center; }
-
-  /* بطاقات لوحة التحكم */
-  .dashboard-cards {
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-  }
-
-  .dash-card { padding: 14px 12px; gap: 10px; }
-  .dash-card-icon   { width: 44px; height: 44px; font-size: 18px; border-radius: 12px; }
-  .dash-card-value  { font-size: clamp(22px, 5vw, 28px); }
-  .dash-card-label  { font-size: 11px; }
-
-  /* بطاقة الصلاة */
-  .prayer-card { padding: 14px 18px; border-radius: 18px; margin-bottom: 18px; }
-  .prayer-icon { font-size: 24px; }
-  .prayer-name { font-size: 17px; }
-  .prayer-countdown { font-size: 22px; letter-spacing: 1px; }
-
-  /* لوحة الشرف */
-  .honor-cards {
-    display: -webkit-box;
-    display: -ms-flexbox;
-    display: flex;
-    -webkit-box-orient: horizontal;
-    -webkit-box-direction: normal;
-    -ms-flex-direction: row;
-    flex-direction: row;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    padding: 14px;
-    gap: 10px;
-    -ms-flex-wrap: nowrap;
-    flex-wrap: nowrap;
-    scroll-snap-type: x mandatory;
-  }
-
-  .honor-card {
-    -webkit-box-flex: 0;
-    -ms-flex: 0 0 140px;
-    flex: 0 0 140px;
-    scroll-snap-align: start;
-    min-width: 140px;
-  }
-
-  /* شريط التحكم */
-  .controls-bar {
-    -webkit-box-orient: vertical;
-    -webkit-box-direction: normal;
-    -ms-flex-direction: column;
-    flex-direction: column;
-    gap: 10px;
-    padding: 12px;
-  }
-
-  .search-wrapper { width: 100%; min-width: 100%; }
-  .filter-select  { width: 100%; }
-  .btn-add { width: 100%; justify-content: center; padding: 11px 20px; }
-
-  /* الجدول → بطاقات على الموبايل */
-  .table-scroll  { overflow: visible !important; }
-  .main-table    { display: block; min-width: 0; }
-  .main-table thead { display: none; }
-  .main-table tbody { display: block; }
-
-  .main-table tbody tr[data-id] {
-    display: block;
-    margin-bottom: 14px;
-    border-radius: 14px;
-    border: 1px solid var(--color-border);
-    background: var(--color-surface);
-    -webkit-box-shadow: var(--shadow-sm);
-    box-shadow: var(--shadow-sm);
-    overflow: hidden;
-    -webkit-transition: all .2s ease;
-    transition: all .2s ease;
-  }
-
-  .main-table tbody tr[data-id]:hover {
-    -webkit-box-shadow: var(--shadow-md);
-    box-shadow: var(--shadow-md);
-    border-color: var(--color-primary-light);
-  }
-
-  .main-table tbody td {
-    display: -webkit-box;
-    display: -ms-flexbox;
-    display: flex;
-    -webkit-box-pack: justify;
-    -ms-flex-pack: justify;
-    justify-content: space-between;
-    -webkit-box-align: center;
-    -ms-flex-align: center;
-    align-items: center;
-    padding: 10px 16px;
-    border-bottom: 1px solid var(--color-border-light);
-    text-align: right;
-    font-size: 13px;
-    width: 100%;
-    gap: 10px;
-  }
-
-  .main-table tbody td:last-child { border-bottom: none; }
-
-  .main-table tbody td::before {
-    content: attr(data-label);
-    font-weight: 700;
-    font-size: 11px;
-    color: var(--color-text-sec);
-    flex-shrink: 0;
-    min-width: 70px;
-    text-align: right;
-  }
-
-  /* إخفاء العمود الترقيمي في البطاقات */
-  .main-table tbody td.col-num { display: none; }
-
-  /* ضبط أعمدة بطاقة الطالب */
-  .main-table tbody td.col-name {
-    background: var(--color-surface-3);
-    font-size: 15px;
-    padding: 12px 16px;
-    border-right: none;
-  }
-
-  .row-high td.col-name { border-right: none; border-top: 4px solid var(--color-primary-light); }
-  .row-mid  td.col-name { border-right: none; border-top: 4px solid var(--color-gold); }
-  .row-low  td.col-name { border-right: none; border-top: 4px solid var(--color-danger); }
-
-  .main-table tbody td.col-memorization,
-  .main-table tbody td.col-revision { -webkit-box-align: start; -ms-flex-align: start; align-items: flex-start; }
-
-  .main-table tbody td.col-memorization .hifz-display,
-  .main-table tbody td.col-revision .hifz-display { -ms-flex-wrap: wrap; flex-wrap: wrap; }
-
-  /* زر الحفظ */
-  .save-attendance-wrapper { padding: 16px; }
-  .btn-save-attendance { width: 100%; justify-content: center; padding: 13px 20px; font-size: 15px; }
-
-  /* أدوات المسؤول */
-  .admin-tool-card { -ms-flex-wrap: wrap; flex-wrap: wrap; }
-  .btn-admin { width: 100%; justify-content: center; margin-top: 8px; }
-
-  /* Modal */
-  .modal-overlay { padding: 12px; -webkit-box-align: end; -ms-flex-align: end; align-items: flex-end; }
-  .modal-content {
-    border-radius: 20px 20px 0 0;
-    max-height: 90vh;
-    padding: 24px 18px;
-    max-width: 100%;
-  }
-  .modal-content.modal-lg,
-  .modal-content.modal-fullscreen {
-    border-radius: 16px;
-    max-height: 92vh;
-    -webkit-box-align: center;
-    -ms-flex-align: center;
-    align-items: center;
-  }
-
-  .profile-layout {
-    display: -webkit-box;
-    display: -ms-flexbox;
-    display: flex;
-    -webkit-box-orient: vertical;
-    -webkit-box-direction: normal;
-    -ms-flex-direction: column;
-    flex-direction: column;
-    gap: 14px;
-  }
-
+  .profile-layout { grid-template-columns: 1fr; gap: 12px; }
   .profile-sidebar { position: static; }
   .profile-stats-grid { grid-template-columns: repeat(2, 1fr); }
 
-  /* مواقيت الصلاة */
   .prayer-times-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
-  .prayer-time-item  { padding: 12px 8px; border-radius: 10px; }
-  .prayer-time-item i { font-size: 18px; }
-  .prayer-time-value  { font-size: 15px; }
 
-  /* Toast */
-  #toast-container { left: 10px; right: 10px; bottom: 80px; }
-  .toast { min-width: auto; width: 100%; max-width: 100%; }
+  #toast-container { bottom: calc(var(--bottom-nav-h) + 10px); }
 
-  /* قائمة السياق */
-  .context-menu { min-width: 170px; font-size: 13px; }
+  .fab-add { left: 14px; bottom: calc(var(--bottom-nav-h) + 12px); }
 
-  /* Bottom Nav */
-  .bottom-nav-item span { font-size: 9.5px; }
-  .nav-fab { width: 48px; height: 48px; }
+  .nav-item span { font-size: 10px; }
+  .nav-fab { width: 50px; height: 50px; font-size: 18px; }
 
-  /* FAB: مخفي على الموبايل (يُستبدل بـ bottom nav) */
-  .fab-save { display: none !important; }
+  .attendance-date-badge { display: none; }
+
+  .reports-search-input { width: 140px; }
+
+  .modal-content { padding: 20px 16px; }
+  .modal-title { font-size: 17px; }
+
+  .search-input { height: 40px; font-size: 13px; }
 }
 
-/* ══════════════════════════════════
-   ■ 600px → 899px — Tablet Portrait
-   ══════════════════════════════════ */
-@media (min-width: 600px) and (max-width: 899px) {
-  .container { padding: 18px 16px; }
-
-  .header { padding: 14px 20px; }
-  .header-title { font-size: 22px; }
-
-  .dashboard-cards {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 14px;
-  }
-
-  .honor-cards {
-    display: -webkit-box;
-    display: -ms-flexbox;
-    display: flex;
-    -ms-flex-wrap: wrap;
-    flex-wrap: wrap;
-    padding: 16px;
-    gap: 12px;
-  }
-
-  .honor-card { -webkit-box-flex: 1; -ms-flex: 1 1 160px; flex: 1 1 160px; min-width: 160px; }
-
-  /* الجدول: تمرير أفقي */
-  .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-  .main-table { min-width: 800px; }
-
-  .profile-layout {
-    display: -webkit-box;
-    display: -ms-flexbox;
-    display: flex;
-    -webkit-box-orient: vertical;
-    -webkit-box-direction: normal;
-    -ms-flex-direction: column;
-    flex-direction: column;
-    gap: 16px;
-  }
-
-  .profile-sidebar { position: static; }
-
-  /* FAB مرئي */
-  .fab-save {
-    display: -webkit-box;
-    display: -ms-flexbox;
-    display: flex;
-    bottom: 90px;
-    left: 24px;
-  }
-}
-
-/* ══════════════════════════════════
-   ■ 900px → 1199px — Tablet Landscape / Small Desktop
-   ══════════════════════════════════ */
-@media (min-width: 900px) and (max-width: 1199px) {
-  .container { padding: 22px 20px; }
-
-  .dashboard-cards { grid-template-columns: repeat(4, 1fr); gap: 14px; }
-
-  .profile-layout {
-    grid-template-columns: 240px 1fr;
-  }
-
-  /* FAB مرئي على الديسكتوب */
-  .fab-save {
-    display: -webkit-box;
-    display: -ms-flexbox;
-    display: flex;
-    bottom: 100px;
-    left: 28px;
-  }
-
-  /* إخفاء Bottom Nav */
-  .bottom-nav { display: none; }
-}
-
-/* ══════════════════════════════════
-   ■ 1200px+ — Desktop
-   ══════════════════════════════════ */
-@media (min-width: 1200px) {
-  .container { padding: 28px 24px; }
-
-  .header { padding: 18px 32px; }
-
-  .dashboard-cards { grid-template-columns: repeat(4, 1fr); gap: 20px; }
-
-  .honor-card { -webkit-box-flex: 1; -ms-flex: 1; flex: 1; }
-
-  .profile-layout { grid-template-columns: 280px 1fr; gap: 24px; }
-
-  /* إخفاء Bottom Nav */
-  .bottom-nav { display: none; }
-
-  /* FAB مرئي */
-  .fab-save {
-    display: -webkit-box;
-    display: -ms-flexbox;
-    display: flex;
-    bottom: 36px;
-    left: 36px;
-  }
-}
-
-/* ══════════════════════════════════
-   ■ Landscape (أفقي) على الأجهزة المحمولة
-   ══════════════════════════════════ */
-@media (max-width: 900px) and (orientation: landscape) {
-  .header { padding: 10px 16px; }
-  .header-title { font-size: 18px; }
-  .header-logo  { font-size: 22px; }
-  .header-center { display: none; }
-
-  .prayer-card { padding: 10px 18px; margin-bottom: 14px; }
-  .prayer-countdown { font-size: 20px; }
-
-  .container { padding: 12px 14px; }
-
-  .dashboard-cards {
-    grid-template-columns: repeat(4, 1fr);
-    gap: 10px;
-  }
-  .dash-card { padding: 12px; }
-  .dash-card-icon { width: 40px; height: 40px; font-size: 16px; }
-
-  .modal-content {
-    max-height: 85vh;
-    overflow-y: auto;
-  }
-
-  .bottom-nav { padding: 6px 0; }
-  .nav-fab { width: 44px; height: 44px; }
-}
-
-/* ══════════════════════════════════
-   ■ Foldable — عند الطي (Small)
-   ══════════════════════════════════ */
+/* ══════════════════════════ 380px specific (Foldable folded) ══════════════════════════ */
 @media (max-width: 380px) {
-  .dashboard-cards { grid-template-columns: 1fr 1fr; gap: 8px; }
-  .dash-card { padding: 12px 10px; }
-  .dash-card-icon { width: 38px; height: 38px; font-size: 15px; }
-  .dash-card-value { font-size: 20px; }
-
-  .header-left .btn-header:nth-child(n+3) { display: none; }
-
-  .btn-dark-mode { width: 34px; height: 34px; }
+  .kpi-card { padding: 11px 9px; }
+  .kpi-value { font-size: 20px; }
+  .students-grid { gap: 8px; }
+  .card-body { padding: 12px 10px 8px; }
+  .card-footer { padding: 8px 10px; gap: 5px; }
 }
 
-/* ══════════════════════════════════
-   ■ Foldable — عند الفتح (Wide)
-   ══════════════════════════════════ */
-@media (min-width: 700px) and (max-width: 900px) {
-  .dashboard-cards { grid-template-columns: repeat(4, 1fr); gap: 12px; }
-
-  .main-table { min-width: 0; width: 100%; }
+/* ══════════════════════════ 481px – 767px (Large Mobile) ══════════════════════════ */
+@media (min-width: 481px) and (max-width: 767px) {
+  .page-wrap { padding: 14px 14px 24px; }
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  .students-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .reports-kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  .charts-row-2 { grid-template-columns: 1fr 1fr; }
+  .reports-summary { grid-template-columns: 1fr 1fr; }
 }
 
-/* ══════════════════════════════════
-   ■ DPR — شاشات عالية الكثافة
-   ══════════════════════════════════ */
-@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
-  .progress-fill { border-radius: 4px; }
-  .btn-parts { border-radius: 50%; }
+/* ══════════════════════════ 768px – 899px (Tablet Portrait) ══════════════════════════ */
+@media (min-width: 768px) and (max-width: 899px) {
+  .page-wrap { padding: 18px 18px 28px; }
+  .kpi-grid { grid-template-columns: repeat(4, 1fr); }
+  .students-grid { grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .reports-kpi-grid { grid-template-columns: repeat(4, 1fr); }
+  .charts-row-2 { grid-template-columns: 1fr 1fr; }
+  .profile-layout { grid-template-columns: 220px 1fr; }
+
+  .fab-add { left: 24px; }
 }
 
-/* ══════════════════════════════════
-   ■ الوضع الليلي — تعديلات إضافية
-   ══════════════════════════════════ */
-[data-theme="dark"] .main-table tbody tr:nth-child(even) {
-  background: var(--color-surface-2);
-}
-
-[data-theme="dark"] .main-table thead th {
-  background: linear-gradient(135deg, #0A3828 0%, #071F17 100%);
-}
-
-[data-theme="dark"] .main-table tbody tr[data-id] {
-  background: var(--color-surface);
-  border-color: var(--color-border);
-}
-
-[data-theme="dark"] .main-table tbody td.col-name {
-  background: var(--color-surface-2);
-}
-
-[data-theme="dark"] .context-menu-danger:hover {
-  background: rgba(198, 40, 40, .15);
-}
-
-[data-theme="dark"] .admin-header {
-  background: linear-gradient(135deg, #1A1F2E, #0D1117) !important;
-}
-
-[data-theme="dark"] .honor-header {
-  background: linear-gradient(135deg, #3D2E00, #241C00) !important;
-}
-
-[data-theme="dark"] .section-header {
-  background: linear-gradient(135deg, #0A3828, #071F17) !important;
-}
-
-[data-theme="dark"] .notif-hint {
-  border-color: var(--color-border);
-}
-
-[data-theme="dark"] .weekly-table thead th {
-  background: var(--color-surface-3);
-}
-
-/* ══════════════════════════════════
-   ■ تحسين التمرير (Scrollbar)
-   ══════════════════════════════════ */
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: var(--color-bg); }
-::-webkit-scrollbar-thumb {
-  background: var(--color-border);
-  border-radius: 3px;
-}
-::-webkit-scrollbar-thumb:hover { background: var(--color-primary-light); }
-
-[data-theme="dark"]::-webkit-scrollbar-track { background: var(--color-bg); }
-[data-theme="dark"]::-webkit-scrollbar-thumb { background: var(--color-border); }
-
-/* ══════════════════════════════════
-   ■ Animations — تقليل الحركة
-   ══════════════════════════════════ */
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    -webkit-animation-duration: .01ms !important;
-    animation-duration: .01ms !important;
-    -webkit-animation-iteration-count: 1 !important;
-    animation-iteration-count: 1 !important;
-    -webkit-transition-duration: .01ms !important;
-    transition-duration: .01ms !important;
-    scroll-behavior: auto !important;
-  }
-}
-
-/* ══════════════════════════════════
-   ■ طباعة
-   ══════════════════════════════════ */
-@media print {
-  .bottom-nav, .fab-save, .btn-dark-mode,
-  .offline-banner, #toast-container { display: none !important; }
-  body { font-size: 12px; }
-  .container { padding: 0; }
-  .table-wrapper, .weekly-section { box-shadow: none; border: 1px solid #ccc; }
-  .main-table { min-width: 0 !important; }
-}
-
-/* ════════════════════════════════════════════════
-   ■ SPA Pages — استجابة للأجهزة المحمولة
-   ════════════════════════════════════════════════ */
-
-/* شبكة بطاقات الطلاب */
-@media (max-width: 599px) {
-  .students-cards-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
-  }
-
-  .card-avatar { width: 46px; height: 46px; font-size: 20px; }
-  .card-name { font-size: 13px; }
-  .card-stat-item { font-size: 11px; }
-  .card-profile-btn { font-size: 11px; padding: 6px 8px; }
-  .card-edit-btn, .card-delete-btn { width: 28px; height: 28px; font-size: 11px; }
-
-  .quick-actions {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
-  }
-  .quick-action-btn { padding: 14px 8px; min-height: 76px; font-size: 12px; }
-  .quick-action-btn i { font-size: 20px; }
-
-  .page-container { padding: 14px 12px; }
-
-  .welcome-section { flex-direction: column; align-items: flex-start; }
-  .welcome-title { font-size: 18px; }
-  .dashboard-period-wrap { width: 100%; }
-  .filter-select-sm { width: 100%; }
-
-  .attendance-page-header { flex-direction: column; align-items: flex-start; }
-  .page-title { font-size: 16px; }
-
-  .admin-tool-card { flex-wrap: wrap; }
-
-  /* Nav FAB */
-  .nav-fab { width: 50px; height: 50px; transform: translateY(-8px); }
-  .nav-fab i { font-size: 18px; }
-
-  /* Settings items */
-  .setting-item { padding: 12px 10px; gap: 10px; }
-  .setting-icon { width: 38px; height: 38px; font-size: 16px; }
-  .setting-info h4 { font-size: 13px; }
-
-  /* Print style */
-  .bottom-nav { padding-bottom: max(env(safe-area-inset-bottom, 0px), 8px); }
-}
-
-@media (max-width: 380px) {
-  .students-cards-grid {
-    grid-template-columns: 1fr;
-    gap: 10px;
-  }
-
-  .quick-actions {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (min-width: 600px) and (max-width: 899px) {
-  .students-cards-grid {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 14px;
-  }
-  .quick-actions { grid-template-columns: repeat(4, 1fr); }
-  .page-container { padding: 16px 16px; }
-}
-
-@media (min-width: 900px) and (max-width: 1199px) {
-  .students-cards-grid {
-    grid-template-columns: repeat(4, 1fr);
-    gap: 14px;
-  }
-  .quick-actions { grid-template-columns: repeat(4, 1fr); }
-}
-
-@media (min-width: 1200px) {
-  .students-cards-grid {
-    grid-template-columns: repeat(5, 1fr);
-    gap: 16px;
-  }
-  .quick-actions { grid-template-columns: repeat(4, 1fr); }
-}
-
-/* إخفاء الـ Bottom Nav على ديسكتوب وإظهار SPA-friendly layout */
+/* ══════════════════════════ 900px – 1199px (Tablet Landscape / Small Desktop) ══════════════════════════ */
 @media (min-width: 900px) {
-  #main-content { padding-bottom: 24px; }
-  .nav-fab { display: none; }
-}
+  .app-page { min-height: calc(100vh - var(--header-h) - var(--bottom-nav-h)); }
 
-/* Dark mode - student cards */
-[data-theme="dark"] .students-cards-grid .student-card {
-  background: var(--color-surface);
-}
+  .page-wrap { padding: 22px 24px 32px; max-width: 1100px; }
 
-/* Landscape Mobile */
-@media (max-width: 900px) and (orientation: landscape) {
-  .students-cards-grid {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
+  .kpi-grid { grid-template-columns: repeat(4, 1fr); }
+  .students-grid { grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .reports-kpi-grid { grid-template-columns: repeat(4, 1fr); }
+  .charts-row-2 { grid-template-columns: 1fr 1fr; }
+  .reports-summary { grid-template-columns: 1fr 1fr; }
+  .profile-layout { grid-template-columns: 260px 1fr; }
+
+  .fab-add {
+    position: fixed;
+    bottom: calc(var(--bottom-nav-h) + 20px);
+    left: 32px;
   }
-  .quick-actions { grid-template-columns: repeat(4, 1fr); }
-  .page-container { padding: 10px 14px; }
+
+  #toast-container { bottom: calc(var(--bottom-nav-h) + 14px); }
+}
+
+@media (min-width: 1200px) {
+  .students-grid { grid-template-columns: repeat(4, 1fr); }
+  .charts-row-2 { grid-template-columns: 3fr 2fr; }
+}
+
+/* ══════════════════════════ Landscape Mobile ══════════════════════════ */
+@media (max-width: 900px) and (orientation: landscape) {
+  :root { --header-h: 50px; }
+  .page-wrap { padding: 10px 14px; }
+  .prayer-card { padding: 10px 16px; margin-bottom: 10px; }
+  .prayer-countdown { font-size: 22px; }
+  .kpi-grid { grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .modal-content { max-height: 88vh; }
+  .bottom-nav { height: 58px; }
+  .nav-fab { width: 46px; height: 46px; transform: translateY(-10px); }
+}
+
+/* ══════════════════════════ Foldable – Unfolded ══════════════════════════ */
+@media (min-width: 700px) and (max-width: 900px) {
+  .kpi-grid { grid-template-columns: repeat(4, 1fr); }
+  .students-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* ══════════════════════════ High DPI ══════════════════════════ */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .card-progress-fill, .progress-fill { border-radius: 4px; }
+}
+
+/* ══════════════════════════ Dark Mode - Responsive fixes ══════════════════════════ */
+[data-theme="dark"] .main-table tbody tr:nth-child(even) { background: var(--c-surface-2); }
+[data-theme="dark"] .reports-table tbody tr:nth-child(even) { background: var(--c-surface-2); }
+[data-theme="dark"] .weekly-table tbody tr:nth-child(even) { background: var(--c-surface-2); }
+
+/* ══════════════════════════ Print ══════════════════════════ */
+@media print {
+  .bottom-nav, .fab-add, .btn-dark-mode, .offline-banner, #toast-container { display: none !important; }
+  :root { --bottom-nav-h: 0px; --header-h: 0px; }
+  body { padding: 0; font-size: 11px; }
 }

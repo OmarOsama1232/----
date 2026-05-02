@@ -1,538 +1,440 @@
 /**
- * app.js
- * نقطة الدخول الرئيسية للتطبيق
- * - تهيئة التطبيق عند تحميل الصفحة
- * - ربط جميع الأحداث (Event Listeners)
- * - دوال التصدير والاستيراد
- * - إدارة البيانات التجريبية
- * - PWA / Service Worker / Offline
+ * app.js — حلقتنا v4
+ * Main Application Entry Point
  */
 
-document.addEventListener('DOMContentLoaded', function () {
-  // 1. تهيئة LocalStorage
+/* ═══════════════════════════════════
+   ■ App Init
+   ═══════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', function() {
   initializeStorage();
-
-  // 2. عرض التاريخ الحالي
   updateDateDisplay();
-
-  // 3. رسم جدول الطلاب (للحضور)
-  renderStudentsTable();
-
-  // 4. رسم بطاقات الطلاب
-  if (typeof renderStudentsCards === 'function') renderStudentsCards();
-
-  // 5. بطاقات الإحصائيات
-  updateDashboardCards();
-
-  // 6. التقارير الأسبوعية
-  renderWeeklyReport();
-
-  // 7. ربط الأحداث
-  setupEventListeners();
-
-  // 8. البحث والتصفية
+  setupBottomNavigation();
   setupSearchAndFilter();
-
-  // 9. فترة لوحة التحكم
-  var periodSelect = document.getElementById('dashboard-period-select');
-  if (periodSelect) {
-    periodSelect.addEventListener('change', function() {
-      updateDashboardCards();
-    });
-  }
-
-  // 10. حالة البيانات التجريبية
+  setupAttendanceModal();
+  setupStudentModals();
+  setupExportButtons();
+  setupImport();
+  setupContextMenu();
+  setupAdminTools();
+  setupOfflineBanner();
+  setupPeriodPills();
+  setupReportsPeriodPills();
+  setupFilterToggle();
+  initPrayerTimes();
+  updateDashboardCards();
+  renderHonorBoardCards();
+  renderDashboardAlerts();
+  renderStudentsCards();
   updateMockDataStatus();
-
-  // 11. تسجيل Service Worker
   registerServiceWorker();
-
-  // 12. كشف الاتصال بالإنترنت
-  setupOfflineDetection();
-
-  // 13. شريط التنقل السفلي (من navigation.js)
-  if (typeof setupBottomNavigation === 'function') setupBottomNavigation();
-
-  // 14. Long Press Context Menu
-  setupLongPressMenu();
-
-  // 15. Swipe to refresh
-  setupSwipeToRefresh();
-
-  // 16. إضافة data-label للجدول (للعرض كبطاقات على الموبايل)
-  injectTableDataLabels();
-
-  // 17. مواقيت الصلاة
-  if (typeof initPrayerTimes === 'function') initPrayerTimes();
-
-  // 18. زر الرجوع (Android)
-  if (typeof initBackButton === 'function') initBackButton();
-
-  // 19. تنبيهات لوحة التحكم
-  if (typeof renderDashboardAlerts === 'function') renderDashboardAlerts();
+  setInterval(updateDateDisplay, 60000);
 });
 
-// ═══════════════════════════════════
-// ■ ربط الأحداث
-// ═══════════════════════════════════
+/* ═══════════════════════════════════
+   ■ Search (students page)
+   ═══════════════════════════════════ */
+/* ─── cards page local filter state ─── */
+var cardsFilterValue = 'all';
 
-function setupEventListeners() {
-  // زر إضافة طالب جديد
-  var addBtn = document.getElementById('btn-add-student');
-  if (addBtn) addBtn.addEventListener('click', openAddStudentModal);
+function setupSearchAndFilter() {
+  var searchInput = document.getElementById('cards-search-input');
+  if (searchInput) {
+    searchInput.addEventListener('input', function() {
+      filterStudentsCards();
+    });
+  }
+}
 
-  // زر حفظ الطالب الجديد
-  var saveNewBtn = document.getElementById('btn-save-new-student');
-  if (saveNewBtn) saveNewBtn.addEventListener('click', saveNewStudent);
+function setupFilterToggle() {
+  var filterBtn = document.getElementById('filter-toggle-btn');
+  if (!filterBtn) return;
 
-  // زر إلغاء إضافة طالب
-  var cancelNewBtn = document.getElementById('btn-cancel-new-student');
-  if (cancelNewBtn) cancelNewBtn.addEventListener('click', function() { closeModal('modal-add-student'); });
+  var options = [
+    { value: 'all',     label: 'الكل' },
+    { value: 'present', label: 'الحاضرون' },
+    { value: 'absent',  label: 'الغائبون' }
+  ];
+  var idx = 0;
 
-  // Enter في حقل الاسم
+  filterBtn.addEventListener('click', function() {
+    idx = (idx + 1) % options.length;
+    cardsFilterValue = options[idx].value;
+    var labelEl = document.getElementById('filter-label');
+    if (labelEl) labelEl.textContent = options[idx].label;
+    filterBtn.classList.toggle('active', idx > 0);
+    filterStudentsCards();
+  });
+}
+
+function updateFilterLabel() {}
+
+/* ═══════════════════════════════════
+   ■ Attendance Modal
+   ═══════════════════════════════════ */
+function setupAttendanceModal() {
+  var attCta = document.getElementById('attendance-cta-btn');
+  if (attCta) attCta.addEventListener('click', openAttendanceModal);
+
+  var saveBtn = document.getElementById('btn-save-attendance');
+  if (saveBtn) {
+    saveBtn.addEventListener('click', function() {
+      saveAllAttendance();
+      renderStudentsCards();
+      renderHonorBoardCards();
+      renderDashboardAlerts();
+      updateDashboardCards();
+      closeModal('modal-attendance');
+    });
+  }
+}
+
+/* ═══════════════════════════════════
+   ■ Student Modals
+   ═══════════════════════════════════ */
+function setupStudentModals() {
+  var btnAdd = document.getElementById('btn-add-student');
+  if (btnAdd) btnAdd.addEventListener('click', openAddStudentModal);
+
+  var btnSaveNew = document.getElementById('btn-save-new-student');
+  if (btnSaveNew) btnSaveNew.addEventListener('click', saveNewStudent);
+
+  var btnCancelNew = document.getElementById('btn-cancel-new-student');
+  if (btnCancelNew) btnCancelNew.addEventListener('click', function() { closeModal('modal-add-student'); });
+
   var newNameInput = document.getElementById('new-student-name');
-  if (newNameInput) {
-    newNameInput.addEventListener('keypress', function(e) { if (e.key === 'Enter') saveNewStudent(); });
-  }
+  if (newNameInput) newNameInput.addEventListener('keypress', function(e) { if (e.key === 'Enter') saveNewStudent(); });
 
-  // زر حفظ تعديل الطالب
-  var saveEditBtn = document.getElementById('btn-save-edit-student');
-  if (saveEditBtn) saveEditBtn.addEventListener('click', saveEditStudent);
+  var btnSaveEdit = document.getElementById('btn-save-edit-student');
+  if (btnSaveEdit) btnSaveEdit.addEventListener('click', saveEditStudent);
 
-  // زر إلغاء تعديل الطالب
-  var cancelEditBtn = document.getElementById('btn-cancel-edit-student');
-  if (cancelEditBtn) cancelEditBtn.addEventListener('click', function() { closeModal('modal-edit-student'); });
+  var btnCancelEdit = document.getElementById('btn-cancel-edit-student');
+  if (btnCancelEdit) btnCancelEdit.addEventListener('click', function() { closeModal('modal-edit-student'); });
 
-  // Enter في حقل تعديل الاسم
-  var editNameInput = document.getElementById('edit-student-name');
-  if (editNameInput) {
-    editNameInput.addEventListener('keypress', function(e) { if (e.key === 'Enter') saveEditStudent(); });
-  }
+  var fabAdd = document.getElementById('fab-add-student');
+  if (fabAdd) fabAdd.addEventListener('click', openAddStudentModal);
 
-  // زر تسجيل الحضور
-  var saveAttendanceBtn = document.getElementById('btn-save-attendance');
-  if (saveAttendanceBtn) saveAttendanceBtn.addEventListener('click', saveAllAttendance);
-
-  // زر تصدير البيانات
-  var exportBtn = document.getElementById('btn-export');
-  if (exportBtn) exportBtn.addEventListener('click', handleExport);
-
-  // زر تصدير Excel
-  var exportExcelBtn = document.getElementById('btn-export-excel');
-  if (exportExcelBtn) exportExcelBtn.addEventListener('click', exportToExcel);
-
-  // زر تصدير PDF
-  var exportPdfBtn = document.getElementById('btn-export-pdf');
-  if (exportPdfBtn) exportPdfBtn.addEventListener('click', exportToPDF);
-
-  // زر استيراد البيانات
-  var importBtn = document.getElementById('btn-import');
-  if (importBtn) importBtn.addEventListener('click', function() { document.getElementById('import-file').click(); });
-
-  // تغيير ملف الاستيراد
-  var importFile = document.getElementById('import-file');
-  if (importFile) importFile.addEventListener('change', handleImport);
-
-  // إغلاق الـ Modals عند الضغط على الخلفية
-  document.querySelectorAll('.modal-overlay').forEach(function(modal) {
-    modal.addEventListener('click', function(e) { closeModalOnBackdrop(e, modal.id); });
+  // Surah full checkboxes
+  var memFull = document.getElementById('edit-mem-full');
+  if (memFull) memFull.addEventListener('change', function() {
+    var f = document.getElementById('edit-mem-from');
+    var t = document.getElementById('edit-mem-to');
+    if (f) f.disabled = this.checked;
+    if (t) t.disabled = this.checked;
   });
 
-  // زر إغلاق Modal الرسم البياني
-  var closeChartBtn = document.getElementById('btn-close-chart');
-  if (closeChartBtn) closeChartBtn.addEventListener('click', function() { closeModal('modal-chart'); });
-
-  // أزرار البيانات التجريبية
-  var genMockBtn = document.getElementById('btn-generate-mock');
-  if (genMockBtn) genMockBtn.addEventListener('click', handleGenerateMock);
-
-  var delMockBtn = document.getElementById('btn-delete-mock');
-  if (delMockBtn) delMockBtn.addEventListener('click', handleDeleteMock);
+  var revFull = document.getElementById('edit-rev-full');
+  if (revFull) revFull.addEventListener('change', function() {
+    var f = document.getElementById('edit-rev-from');
+    var t = document.getElementById('edit-rev-to');
+    if (f) f.disabled = this.checked;
+    if (t) t.disabled = this.checked;
+  });
 }
 
-// ═══════════════════════════════════
-// ■ البيانات التجريبية
-// ═══════════════════════════════════
+/* ═══════════════════════════════════
+   ■ Dashboard Period Pills
+   ═══════════════════════════════════ */
+function setupPeriodPills() {
+  var pills = document.querySelectorAll('.dashboard-period-pill');
+  pills.forEach(function(pill) {
+    pill.addEventListener('click', function() {
+      pills.forEach(function(p) { p.classList.remove('active'); });
+      this.classList.add('active');
+      var period = this.getAttribute('data-period');
+      var sel = document.getElementById('dashboard-period-select');
+      if (sel) sel.value = period;
+      updateDashboardCards();
+      renderHonorBoardCards();
+    });
+  });
 
-async function handleGenerateMock() {
-  var students = getAllStudents();
-  if (students.length === 0) {
-    showToast('لا يوجد طلاب لإضافة بيانات تجريبية. أضف طلاباً أولاً.', 'warning');
-    return;
-  }
-  if (hasMockData()) {
-    showToast('توجد بيانات تجريبية بالفعل! احذف القديمة أولاً.', 'warning');
-    return;
-  }
-
-  var confirmed = await showConfirm(
-    'سيتم إنشاء بيانات تجريبية لمدة سنة كاملة لجميع الطلاب (' + students.length + ' طالب).\nأيام الأحد والخميس فقط. البيانات الحقيقية لن تتأثر.\n\nهل تريد المتابعة؟',
-    'إنشاء بيانات تجريبية'
-  );
-  if (!confirmed) return;
-
-  showToast('جاري إنشاء البيانات التجريبية...', 'success');
-  setTimeout(function() {
-    var result = generateMockData();
-    if (result.success) {
-      showToast('تم إنشاء ' + result.recordsAdded + ' سجل تجريبي لـ ' + result.studentsCount + ' طالب');
-      refreshAllViews();
-    } else if (result.reason === 'no_students') {
-      showToast('لا يوجد طلاب!', 'error');
-    } else if (result.reason === 'already_exists') {
-      showToast('بيانات تجريبية موجودة مسبقاً!', 'warning');
-    }
-  }, 100);
+  var sel = document.getElementById('dashboard-period-select');
+  if (sel) sel.addEventListener('change', function() {
+    updateDashboardCards();
+    renderHonorBoardCards();
+  });
 }
 
-async function handleDeleteMock() {
-  if (!hasMockData()) {
-    showToast('لا توجد بيانات تجريبية لحذفها', 'warning');
-    return;
-  }
-
-  var confirmed = await showConfirm(
-    'سيتم حذف جميع البيانات التجريبية مع الحفاظ على البيانات الحقيقية.\nهل تريد المتابعة؟',
-    'حذف البيانات التجريبية'
-  );
-  if (!confirmed) return;
-
-  var result = deleteMockData();
-  if (result.success) {
-    showToast('تم حذف ' + result.recordsRemoved + ' سجل تجريبي. البيانات الحقيقية (' + result.realRecordsKept + ' سجل) سليمة.');
-    refreshAllViews();
-  }
+/* ═══════════════════════════════════
+   ■ Reports Period Pills
+   ═══════════════════════════════════ */
+function setupReportsPeriodPills() {
+  var pills = document.querySelectorAll('.report-period-pill');
+  pills.forEach(function(pill) {
+    pill.addEventListener('click', function() {
+      pills.forEach(function(p) { p.classList.remove('active'); });
+      this.classList.add('active');
+      var period = this.getAttribute('data-period');
+      if (typeof renderReportsFull === 'function') renderReportsFull(period);
+    });
+  });
 }
 
-function updateMockDataStatus() {
-  var card = document.getElementById('mock-status-card');
-  var text = document.getElementById('mock-status-text');
-  if (!card || !text) return;
+/* ═══════════════════════════════════
+   ■ Export Buttons (Header)
+   ═══════════════════════════════════ */
+function setupExportButtons() {
+  var btnExcel = document.getElementById('btn-export-excel');
+  var btnPdf   = document.getElementById('btn-export-pdf');
+  var btnBak   = document.getElementById('btn-export');
 
-  if (hasMockData()) {
-    var records = getDailyRecords();
-    var mockCount = records.filter(function(r) { return r._mock === '__mock__'; }).length;
-    var realCount = records.length - mockCount;
-    card.style.display = 'flex';
-    text.textContent = 'توجد ' + mockCount + ' سجل تجريبي و ' + realCount + ' سجل حقيقي';
-  } else {
-    card.style.display = 'none';
-  }
+  if (btnExcel) btnExcel.addEventListener('click', exportToExcel);
+  if (btnPdf)   btnPdf.addEventListener('click',   exportToPDF);
+  if (btnBak)   btnBak.addEventListener('click',   exportToJSON);
 }
 
-/**
- * تحديث جميع العروض بعد تغيير البيانات
- */
-function refreshAllViews() {
-  renderStudentsTable();
-  if (typeof renderStudentsCards === 'function') renderStudentsCards();
-  updateDashboardCards();
-  renderWeeklyReport();
-  updateMockDataStatus();
-  if (typeof renderDashboardAlerts === 'function') renderDashboardAlerts();
+/* ═══════════════════════════════════
+   ■ Import
+   ═══════════════════════════════════ */
+function setupImport() {
+  var btnImport = document.getElementById('btn-import');
+  if (btnImport) btnImport.addEventListener('click', function() {
+    var fi = document.getElementById('import-file');
+    if (fi) fi.click();
+  });
+
+  var fileInput = document.getElementById('import-file');
+  if (fileInput) fileInput.addEventListener('change', function(e) {
+    var file = e.target.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(evt) {
+      try {
+        var data = JSON.parse(evt.target.result);
+        if (data.students)      localStorage.setItem('halaqah_students',      JSON.stringify(data.students));
+        if (data.dailyRecords)  localStorage.setItem('halaqah_daily_records', JSON.stringify(data.dailyRecords));
+        showToast('تم استيراد البيانات بنجاح');
+        renderStudentsCards();
+        updateDashboardCards();
+        renderHonorBoardCards();
+        renderDashboardAlerts();
+        if (typeof renderWeeklyReport === 'function') renderWeeklyReport();
+      } catch(err) {
+        showToast('خطأ في قراءة الملف', 'error');
+      }
+    };
+    reader.readAsText(file);
+    this.value = '';
+  });
 }
 
-// ═══════════════════════════════════
-// ■ التصدير
-// ═══════════════════════════════════
-
-function handleExport() {
-  var data = exportAllData();
-  var jsonString = JSON.stringify(data, null, 2);
-  var blob = new Blob([jsonString], { type: 'application/json;charset=utf-8' });
-  var url = URL.createObjectURL(blob);
-  var today = getTodayDate();
-  var filename = 'حلقتنا-backup-' + today + '.json';
-  var link = document.createElement('a');
-  link.href = url;
-  link.download = filename;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(url);
-  showToast('تم تصدير البيانات بنجاح: ' + filename);
+function exportToJSON() {
+  var data = {
+    students:     JSON.parse(localStorage.getItem('halaqah_students')      || '[]'),
+    dailyRecords: JSON.parse(localStorage.getItem('halaqah_daily_records') || '[]'),
+    exportedAt: new Date().toISOString()
+  };
+  var blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'halaqah_backup_' + getTodayDate() + '.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  showToast('تم تصدير النسخة الاحتياطية');
 }
 
+/* ═══════════════════════════════════
+   ■ Excel Export
+   ═══════════════════════════════════ */
 function exportToExcel() {
-  if (typeof XLSX === 'undefined') {
-    showToast('المكتبة غير متوفرة، تحقق من الاتصال بالإنترنت', 'error');
-    return;
-  }
-
+  if (typeof XLSX === 'undefined') { showToast('مكتبة Excel غير متوفرة', 'error'); return; }
   var students = getAllStudents();
-  var today = getTodayDate();
-  var todayRecords = getRecordsByDate(today);
-
-  var excelData = students.map(function(s, index) {
-    var record = todayRecords.find(function(r) { return r.studentId === s.id; });
+  var rows = students.map(function(s, i) {
+    var records = getRecordsForPeriod(s.id, 'all');
+    var valid   = records.filter(function(r) { return isClassDay(r.date); });
+    var present = valid.filter(function(r) { return r.present; });
+    var avg = present.length > 0 ? (present.reduce(function(a,r) { return a+r.rating; }, 0)/present.length).toFixed(1) : 0;
     return {
-      'م': index + 1,
-      'اسم الطالب': s.name,
-      'الحفظ الحالي': (s.currentHifz && s.currentHifz.surah) ? s.currentHifz.surah : '',
-      'المراجعة': (s.currentReview && s.currentReview.surah) ? s.currentReview.surah : '',
-      'الأجزاء المحفوظة': s.partsMemorized,
-      'حضور اليوم': record && record.present ? 'حاضر' : 'غائب',
-      'التقييم': record ? record.rating : '-',
-      'ملاحظات اليوم': record ? (record.note || '') : ''
+      'م': i+1, 'الاسم': s.name,
+      'الأجزاء': s.partsMemorized,
+      'أيام الحضور': present.length,
+      'إجمالي الأيام': valid.length,
+      'متوسط التقييم': avg,
+      'الحفظ الحالي': (s.currentHifz && s.currentHifz.surah) ? s.currentHifz.surah : '-'
     };
   });
-
-  var ws = XLSX.utils.json_to_sheet(excelData);
-  if (!ws['!dir']) ws['!dir'] = 'rtl';
+  var ws = XLSX.utils.json_to_sheet(rows);
   var wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'الطلاب');
-  XLSX.writeFile(wb, 'تقرير_الطلاب_' + today + '.xlsx');
+  XLSX.utils.book_append_sheet(wb, ws, 'حلقتنا');
+  XLSX.writeFile(wb, 'حلقتنا_' + getTodayDate() + '.xlsx');
   showToast('تم تصدير ملف Excel بنجاح');
 }
 
+/* ═══════════════════════════════════
+   ■ PDF Export
+   ═══════════════════════════════════ */
 function exportToPDF() {
-  if (typeof html2canvas === 'undefined' || typeof window.jspdf === 'undefined') {
-    showToast('المكتبة غير متوفرة، تحقق من الاتصال بالإنترنت', 'error');
-    return;
-  }
-
-  showToast('جاري تحضير ملف PDF، يرجى الانتظار...', 'success');
-  var jsPDF = window.jspdf.jsPDF;
-  var pdf = new jsPDF('p', 'mm', 'a4');
-  var tableEl = document.getElementById('main-table-wrapper');
-
-  html2canvas(tableEl, { scale: 1.5, useCORS: true }).then(function(canvas) {
-    var imgData = canvas.toDataURL('image/png');
-    var pdfWidth = pdf.internal.pageSize.getWidth();
-    var margin = 10;
-    var renderWidth = pdfWidth - (margin * 2);
-    var pdfHeight = (canvas.height * renderWidth) / canvas.width;
-    pdf.text('تقرير حلقة تحفيظ القرآن - حلقتنا', pdfWidth / 2, 10, { align: 'center' });
-    pdf.addImage(imgData, 'PNG', margin, 15, renderWidth, pdfHeight);
-    var today = getTodayDate();
-    pdf.save('تقرير_' + today + '.pdf');
-    showToast('تم إنشاء ملف PDF بنجاح');
-  }).catch(function(err) {
-    console.error(err);
-    showToast('حدث خطأ أثناء إنشاء PDF', 'error');
-  });
+  if (typeof html2canvas === 'undefined') { showToast('مكتبة PDF غير متوفرة', 'error'); return; }
+  showToast('جاري تحضير PDF...', 'success');
+  var el = document.getElementById('page-reports');
+  if (!el) el = document.body;
+  var jsPDFLib = window.jspdf && window.jspdf.jsPDF;
+  if (!jsPDFLib) { showToast('مكتبة jsPDF غير متوفرة', 'error'); return; }
+  html2canvas(el, { scale: 1, useCORS: true }).then(function(canvas) {
+    var pdf = new jsPDFLib('p', 'mm', 'a4');
+    var pdfW = pdf.internal.pageSize.getWidth();
+    var rW = pdfW - 20;
+    var rH = (canvas.height * rW) / canvas.width;
+    pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 10, 10, rW, rH);
+    pdf.save('تقرير_حلقتنا_' + getTodayDate() + '.pdf');
+    showToast('تم إنشاء PDF بنجاح');
+  }).catch(function() { showToast('حدث خطأ في PDF', 'error'); });
 }
 
-// ═══════════════════════════════════
-// ■ الاستيراد
-// ═══════════════════════════════════
+/* ═══════════════════════════════════
+   ■ Admin Tools
+   ═══════════════════════════════════ */
+function setupAdminTools() {
+  var btnGen = document.getElementById('btn-generate-mock');
+  var btnDel = document.getElementById('btn-delete-mock');
 
-function handleImport(e) {
-  var file = e.target.files[0];
-  if (!file) return;
+  if (btnGen) btnGen.addEventListener('click', function() {
+    generateMockData();
+    renderStudentsCards();
+    updateDashboardCards();
+    renderHonorBoardCards();
+    renderDashboardAlerts();
+    updateMockDataStatus();
+  });
 
-  if (!file.name.endsWith('.json')) {
-    showToast('يرجى اختيار ملف JSON صالح', 'error');
-    e.target.value = '';
-    return;
-  }
-
-  var reader = new FileReader();
-  reader.onload = async function(event) {
-    try {
-      var data = JSON.parse(event.target.result);
-      if (!data.students || !data.dailyRecords) {
-        showToast('الملف غير صالح: يجب أن يحتوي على students و dailyRecords', 'error');
-        return;
-      }
-      var confirmed = await showConfirm(
-        'سيتم استبدال جميع البيانات الحالية بالبيانات المستوردة!\nالملف يحتوي على ' + data.students.length + ' طالب و ' + data.dailyRecords.length + ' سجل.\nهل أنت متأكد؟',
-        'تأكيد استيراد البيانات'
-      );
-      if (confirmed) {
-        var success = importAllData(data);
-        if (success) {
-          showToast('تم استيراد البيانات بنجاح! جاري إعادة تحميل الصفحة...');
-          setTimeout(function() { location.reload(); }, 1500);
-        } else {
-          showToast('حدث خطأ أثناء استيراد البيانات', 'error');
-        }
-      }
-    } catch (error) {
-      showToast('خطأ في قراءة الملف: تأكد أنه ملف JSON صالح', 'error');
+  if (btnDel) btnDel.addEventListener('click', async function() {
+    var ok = await showConfirm('هل أنت متأكد من حذف جميع البيانات؟\nلا يمكن التراجع عن هذا الإجراء.', 'تحذير: حذف كامل');
+    if (ok) {
+      localStorage.removeItem('halaqah_students');
+      localStorage.removeItem('halaqah_daily_records');
+      renderStudentsCards();
+      updateDashboardCards();
+      renderHonorBoardCards();
+      renderDashboardAlerts();
+      updateMockDataStatus();
+      showToast('تم مسح جميع البيانات');
     }
-  };
-  reader.readAsText(file);
-  e.target.value = '';
+  });
 }
 
-// ═══════════════════════════════════
-// ■ Service Worker
-// ═══════════════════════════════════
-
-function registerServiceWorker() {
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js').then(function(reg) {
-      console.log('✅ Service Worker مسجل:', reg.scope);
-    }).catch(function(err) {
-      console.warn('⚠️ فشل تسجيل Service Worker:', err);
-    });
+function updateMockDataStatus() {
+  var students = getAllStudents();
+  var hasMock = students.some(function(s) { return s.id && s.id.indexOf('mock-') === 0; });
+  var card = document.getElementById('mock-status-card');
+  var text = document.getElementById('mock-status-text');
+  if (card) card.style.display = hasMock ? 'flex' : 'none';
+  if (text) {
+    var mockCount = students.filter(function(s) { return s.id && s.id.indexOf('mock-') === 0; }).length;
+    text.textContent = hasMock ? ('يوجد ' + mockCount + ' طلاب تجريبيين') : 'لا توجد بيانات تجريبية';
   }
 }
 
-// ═══════════════════════════════════
-// ■ كشف الاتصال بالإنترنت
-// ═══════════════════════════════════
-
-function setupOfflineDetection() {
-  var banner = document.getElementById('offline-banner');
-  if (!banner) return;
-
-  function updateStatus() {
-    banner.style.display = navigator.onLine ? 'none' : 'flex';
-  }
-
-  window.addEventListener('online', function() {
-    updateStatus();
-    showToast('تم استعادة الاتصال بالإنترنت');
-  });
-  window.addEventListener('offline', function() {
-    updateStatus();
-    showToast('أنت تعمل بدون اتصال — البيانات المحلية متاحة', 'warning');
-  });
-  updateStatus();
-}
-
-// ═══════════════════════════════════
-// ■ Long Press Context Menu
-// ═══════════════════════════════════
-
-var longPressTimer = null;
-var longPressStudentId = null;
-
-function setupLongPressMenu() {
+/* ═══════════════════════════════════
+   ■ Context Menu
+   ═══════════════════════════════════ */
+function setupContextMenu() {
   var menu = document.getElementById('context-menu');
   if (!menu) return;
 
-  document.addEventListener('click', function() { menu.style.display = 'none'; });
-  document.addEventListener('touchstart', function(e) {
-    if (!menu.contains(e.target)) menu.style.display = 'none';
-  }, { passive: true });
+  document.addEventListener('contextmenu', function(e) {
+    var card = e.target.closest('.student-card');
+    if (!card) { menu.style.display = 'none'; return; }
+    e.preventDefault();
+    var id = null;
+    var btns = card.querySelectorAll('[onclick]');
+    btns.forEach(function(b) {
+      var m = b.getAttribute('onclick').match(/openStudentProfile\('([^']+)'\)/);
+      if (m) id = m[1];
+    });
+    if (!id) return;
+    menu.setAttribute('data-id', id);
+    menu.style.display = 'block';
+    var x = e.clientX, y = e.clientY;
+    if (x + 190 > window.innerWidth)  x = window.innerWidth  - 200;
+    if (y + 160 > window.innerHeight) y = window.innerHeight - 170;
+    menu.style.right = 'auto';
+    menu.style.left  = x + 'px';
+    menu.style.top   = y + 'px';
+  });
+
+  document.addEventListener('click', function() { if (menu) menu.style.display = 'none'; });
 
   var ctxProfile = document.getElementById('ctx-profile');
+  var ctxEdit    = document.getElementById('ctx-edit');
+  var ctxDelete  = document.getElementById('ctx-delete');
+
   if (ctxProfile) ctxProfile.addEventListener('click', function() {
-    if (longPressStudentId) openStudentProfile(longPressStudentId);
+    var id = menu.getAttribute('data-id'); if (id) openStudentProfile(id);
+    menu.style.display = 'none';
   });
-
-  var ctxEdit = document.getElementById('ctx-edit');
   if (ctxEdit) ctxEdit.addEventListener('click', function() {
-    if (longPressStudentId) openEditStudentModal(longPressStudentId);
+    var id = menu.getAttribute('data-id'); if (id) openEditStudentModal(id);
+    menu.style.display = 'none';
   });
-
-  var ctxDelete = document.getElementById('ctx-delete');
   if (ctxDelete) ctxDelete.addEventListener('click', function() {
-    if (longPressStudentId) confirmDeleteStudent(longPressStudentId);
-  });
-
-  // Long press على جدول الحضور
-  var tbody = document.getElementById('students-tbody');
-  if (tbody) {
-    tbody.addEventListener('touchstart', function(e) {
-      var nameLink = e.target.closest('.student-name-link');
-      if (!nameLink) return;
-      var row = nameLink.closest('tr[data-id]');
-      if (!row) return;
-
-      longPressTimer = setTimeout(function() {
-        e.preventDefault();
-        longPressStudentId = row.getAttribute('data-id');
-        var touch = e.touches[0];
-        var x = Math.min(touch.clientX, window.innerWidth - 220);
-        var y = Math.min(touch.clientY, window.innerHeight - 160);
-        menu.style.left = x + 'px';
-        menu.style.top = y + 'px';
-        menu.style.display = 'block';
-        if (navigator.vibrate) navigator.vibrate(30);
-      }, 500);
-    }, { passive: false });
-
-    tbody.addEventListener('touchend', function() { clearTimeout(longPressTimer); });
-    tbody.addEventListener('touchmove', function() { clearTimeout(longPressTimer); });
-  }
-}
-
-// ═══════════════════════════════════
-// ■ Swipe to Refresh
-// ═══════════════════════════════════
-
-function setupSwipeToRefresh() {
-  var startY = 0;
-  var pulling = false;
-  var main = document.getElementById('main-content');
-  if (!main) return;
-
-  main.addEventListener('touchstart', function(e) {
-    if (window.scrollY === 0) {
-      startY = e.touches[0].clientY;
-      pulling = true;
-    }
-  }, { passive: true });
-
-  main.addEventListener('touchmove', function(e) {
-    if (!pulling) return;
-    var diff = e.touches[0].clientY - startY;
-    if (diff > 120) {
-      pulling = false;
-      showToast('جاري تحديث البيانات...', 'success');
-      setTimeout(function() {
-        refreshAllViews();
-        showToast('تم تحديث البيانات');
-      }, 300);
-    }
-  }, { passive: true });
-
-  main.addEventListener('touchend', function() { pulling = false; }, { passive: true });
-}
-
-// ═══════════════════════════════════
-// ■ إضافة data-label للجدول
-// ═══════════════════════════════════
-
-function injectTableDataLabels() {
-  var labels = ['م', 'الاسم', 'الحفظ', 'المراجعة', 'الأجزاء', 'الحضور', 'التقييم', 'ملاحظات', 'إجراءات'];
-  var tbody = document.getElementById('students-tbody');
-  if (!tbody) return;
-
-  var observer = new MutationObserver(function() {
-    tbody.querySelectorAll('tr[data-id]').forEach(function(row) {
-      var cells = row.querySelectorAll('td');
-      cells.forEach(function(td, i) {
-        if (labels[i] && !td.getAttribute('data-label')) {
-          td.setAttribute('data-label', labels[i]);
-        }
-      });
-    });
-  });
-
-  observer.observe(tbody, { childList: true, subtree: false });
-
-  tbody.querySelectorAll('tr[data-id]').forEach(function(row) {
-    var cells = row.querySelectorAll('td');
-    cells.forEach(function(td, i) {
-      if (labels[i]) td.setAttribute('data-label', labels[i]);
-    });
+    var id = menu.getAttribute('data-id'); if (id) confirmDeleteStudent(id);
+    menu.style.display = 'none';
   });
 }
 
-// ═══════════════════════════════════
-// ■ البحث والتصفية (Override)
-// ═══════════════════════════════════
+/* ═══════════════════════════════════
+   ■ Offline Banner
+   ═══════════════════════════════════ */
+function setupOfflineBanner() {
+  var banner = document.getElementById('offline-banner');
+  function upd() { if (banner) banner.style.display = navigator.onLine ? 'none' : 'flex'; }
+  window.addEventListener('online',  upd);
+  window.addEventListener('offline', upd);
+  upd();
+}
 
-function setupSearchAndFilter() {
-  var searchInput = document.getElementById('search-input');
-  var filterSelect = document.getElementById('filter-select');
+/* ═══════════════════════════════════
+   ■ Service Worker
+   ═══════════════════════════════════ */
+function registerServiceWorker() {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').catch(function() {});
+  }
+}
 
-  if (searchInput) {
-    searchInput.addEventListener('input', function() {
-      filterStudents();
-      if (typeof filterStudentsCards === 'function') filterStudentsCards();
-    });
+/* ═══════════════════════════════════
+   ■ Mock Data Generator
+   ═══════════════════════════════════ */
+function generateMockData() {
+  var existing = getAllStudents();
+  if (existing.some(function(s) { return s.id && s.id.indexOf('mock-') === 0; })) {
+    showToast('البيانات التجريبية موجودة بالفعل', 'warning'); return;
   }
 
-  if (filterSelect) {
-    filterSelect.addEventListener('change', function() {
-      filterStudents();
-      if (typeof filterStudentsCards === 'function') filterStudentsCards();
-    });
+  var names = ['أحمد محمد','خالد عبدالله','عمر سعيد','يوسف إبراهيم','علي حسن',
+               'محمد فهد','سعد ناصر','عبدالرحمن أحمد','فيصل عمر','زياد طارق'];
+
+  var students = names.map(function(name, i) {
+    return {
+      id: 'mock-' + i + '-' + Date.now(),
+      name: name,
+      currentHifz:   { surah: SURAHS[i+60] ? SURAHS[i+60].name : '', surahNumber: i+61, from: '1', to: '10', isFull: false, details: 'الآيات 1-10' },
+      currentReview: { surah: SURAHS[i+50] ? SURAHS[i+50].name : '', surahNumber: i+51, from: '', to: '', isFull: true, details: 'كاملة' },
+      partsMemorized: Math.floor(Math.random() * 15) + 5,
+      createdAt: new Date().toISOString()
+    };
+  });
+
+  students.forEach(function(s) { saveStudent(s); });
+
+  // Generate class records for past 8 weeks
+  var classDates = [];
+  var today = new Date();
+  for (var i = 0; i < 60; i++) {
+    var d = new Date(today);
+    d.setDate(today.getDate() - i);
+    var dateStr = d.toISOString().slice(0, 10);
+    if (isClassDay(dateStr)) classDates.push(dateStr);
   }
+
+  students.forEach(function(s) {
+    classDates.forEach(function(date) {
+      var present = Math.random() > 0.15;
+      var rating  = present ? (Math.floor(Math.random() * 4) + 7) : 5;
+      saveDailyRecord({ studentId: s.id, date: date, present: present, rating: rating, note: '' });
+    });
+  });
+
+  showToast('تم إنشاء ' + names.length + ' طلاب تجريبيين بسجلات حضور');
 }

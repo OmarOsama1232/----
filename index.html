@@ -5,20 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
   <title>حلقتنا - إدارة حلقات تحفيظ القرآن الكريم</title>
   <meta name="description" content="تطبيق متكامل لإدارة حلقات تحفيظ القرآن الكريم - متابعة الطلاب والحضور والتقييمات">
-
-  <!-- Android / PWA Meta Tags -->
   <meta name="theme-color" content="#0F4C3A">
   <meta name="color-scheme" content="light dark">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
-  <!-- PWA Manifest & Icons -->
   <link rel="manifest" href="manifest.json">
   <link rel="shortcut icon" href="icon-512.png">
   <link rel="apple-touch-icon" href="icon-512.png">
 
-  <!-- Google Fonts - Tajawal + Cairo -->
+  <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -29,7 +25,7 @@
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
-  <!-- SheetJS & jsPDF -->
+  <!-- SheetJS & jsPDF & html2canvas -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -84,7 +80,7 @@
     }
   </script>
 
-  <!-- Dark Mode (must load first to prevent flash) -->
+  <!-- Dark Mode (loads first to prevent flash) -->
   <script src="js/darkmode.js"></script>
 
   <!-- App CSS -->
@@ -93,40 +89,41 @@
 </head>
 <body>
 
-  <!-- ═══════════════ بانر عدم الاتصال ═══════════════ -->
+  <!-- ═══ Offline Banner ═══ -->
   <div class="offline-banner" id="offline-banner" style="display:none;">
     <i class="fas fa-wifi-slash"></i>
     <span>أنت تعمل بدون اتصال — البيانات المحلية متاحة</span>
   </div>
 
-  <!-- ═══════════════ الشريط العلوي ═══════════════ -->
-  <header class="header" id="header">
-    <div class="header-right">
-      <i class="fas fa-mosque header-logo"></i>
-      <div>
-        <h1 class="header-title">حلقتنا</h1>
-        <div class="header-subtitle" id="current-date">
+  <!-- ═══════════════════════════════════════════════
+       App Header
+       ═══════════════════════════════════════════════ -->
+  <header class="app-header">
+    <div class="header-brand">
+      <div class="header-logo-icon">
+        <i class="fas fa-mosque"></i>
+      </div>
+      <div class="header-title-wrap">
+        <span class="header-title">حلقتنا</span>
+        <div class="header-date-wrap" id="current-date">
           <span class="hijri-date"></span>
           <span class="gregorian-date"></span>
         </div>
       </div>
     </div>
-    <div class="header-left">
-      <button class="btn-header btn-header-excel" id="btn-export-excel" title="تصدير إلى Excel">
+
+    <div class="header-actions">
+      <button class="btn-header-icon" id="btn-export-excel" title="تصدير Excel">
         <i class="fas fa-file-excel"></i>
-        <span class="btn-header-text">Excel</span>
       </button>
-      <button class="btn-header btn-header-pdf" id="btn-export-pdf" title="تصدير PDF">
+      <button class="btn-header-icon" id="btn-export-pdf" title="تصدير PDF">
         <i class="fas fa-file-pdf"></i>
-        <span class="btn-header-text">PDF</span>
       </button>
-      <button class="btn-header" id="btn-export" title="نسخة احتياطية">
+      <button class="btn-header-icon" id="btn-export" title="نسخة احتياطية">
         <i class="fas fa-database"></i>
-        <span class="btn-header-text">نسخة</span>
       </button>
-      <button class="btn-header" id="btn-import" title="استيراد">
+      <button class="btn-header-icon" id="btn-import" title="استيراد">
         <i class="fas fa-upload"></i>
-        <span class="btn-header-text">استيراد</span>
       </button>
       <button class="btn-dark-mode" id="btn-dark-mode" title="الوضع الليلي" aria-label="تبديل الوضع الليلي">
         <i class="fas fa-moon"></i>
@@ -134,345 +131,476 @@
     </div>
   </header>
 
-  <!-- ═══════════════ المحتوى الرئيسي (SPA Pages) ═══════════════ -->
-  <main id="main-content">
+  <!-- ═══════════════════════════════════════════════
+       Main SPA Content
+       ═══════════════════════════════════════════════ -->
+  <main class="main-content" id="main-content">
 
-    <!-- ════════════════════════════════════════
-         الصفحة 1: الرئيسية (Dashboard)
-         ════════════════════════════════════════ -->
-    <section class="app-page page-active" id="page-dashboard">
-      <div class="page-container">
+    <!-- ══════════════════════════════════════════
+         Page 1: Dashboard (Home)
+         ══════════════════════════════════════════ -->
+    <section class="app-page active" id="page-home">
+      <div class="page-wrap">
 
-        <!-- بطاقة مواقيت الصلاة -->
-        <div class="prayer-card" id="prayer-card" onclick="openModal('modal-prayer-times')">
-          <div class="prayer-card-right">
-            <i class="fas fa-mosque prayer-icon"></i>
-            <div class="prayer-card-text">
+        <!-- Prayer Times Card -->
+        <div class="prayer-card" id="prayer-card">
+          <div class="prayer-left">
+            <div class="prayer-icon-wrap">
+              <i class="fas fa-mosque"></i>
+            </div>
+            <div class="prayer-info">
               <div class="prayer-label">الصلاة القادمة</div>
               <div class="prayer-name" id="next-prayer-name">جاري التحميل...</div>
             </div>
           </div>
-          <div class="prayer-card-left">
-            <i class="fas fa-hourglass-half prayer-clock-icon"></i>
+          <div class="prayer-right">
             <div class="prayer-countdown" id="next-prayer-countdown">--:--:--</div>
-            <button class="btn-retry-prayer" id="btn-retry-prayer" style="display:none;" onclick="event.stopPropagation(); retryPrayerTimes();">
+            <div class="prayer-countdown-label">الوقت المتبقي</div>
+            <button class="btn-retry-prayer" id="btn-retry-prayer" style="display:none;margin-top:6px;" onclick="event.stopPropagation();retryPrayerTimes();">
               <i class="fas fa-redo"></i>
             </button>
           </div>
-          <i class="fas fa-chevron-down prayer-expand-icon"></i>
         </div>
 
-        <!-- ترحيب -->
-        <div class="welcome-section">
-          <div class="welcome-text">
-            <h2 class="welcome-title">أهلاً وسهلاً 👋</h2>
-            <p class="welcome-sub">إليك نظرة سريعة على حلقتك اليوم</p>
+        <!-- Period Filter Row -->
+        <div class="period-filter-row">
+          <div class="section-title" style="margin-bottom:0;">
+            <i class="fas fa-tachometer-alt"></i>
+            <span>لوحة التحكم</span>
           </div>
-          <div class="dashboard-period-wrap">
-            <select id="dashboard-period-select" class="filter-select filter-select-sm">
-              <option value="week" selected>هذا الأسبوع</option>
-              <option value="month">هذا الشهر</option>
-              <option value="year">هذا العام</option>
-              <option value="all">كل الوقت</option>
-            </select>
+          <div class="period-pills" id="dashboard-pills">
+            <button class="period-pill dashboard-period-pill active" data-period="week">أسبوع</button>
+            <button class="period-pill dashboard-period-pill" data-period="month">شهر</button>
+            <button class="period-pill dashboard-period-pill" data-period="year">سنة</button>
+            <button class="period-pill dashboard-period-pill" data-period="all">الكل</button>
           </div>
-        </div>
-
-        <!-- بطاقات الإحصائيات السريعة -->
-        <div class="dashboard-cards" id="dashboard-cards">
-          <div class="dash-card">
-            <div class="dash-card-icon bg-green"><i class="fas fa-users"></i></div>
-            <div class="dash-card-info">
-              <div class="dash-card-label">إجمالي الطلاب</div>
-              <div class="dash-card-value" id="total-students-count">0</div>
-            </div>
-          </div>
-          <div class="dash-card">
-            <div class="dash-card-icon bg-blue"><i class="fas fa-user-check"></i></div>
-            <div class="dash-card-info">
-              <div class="dash-card-label">إجمالي الحضور</div>
-              <div class="dash-card-value" id="today-attendance-count">0</div>
-              <div class="dash-card-sub" id="today-attendance-percent">0%</div>
-            </div>
-          </div>
-          <div class="dash-card">
-            <div class="dash-card-icon bg-amber"><i class="fas fa-star-half-alt"></i></div>
-            <div class="dash-card-info">
-              <div class="dash-card-label">متوسط التقييم</div>
-              <div class="dash-card-value" id="weekly-avg-rating">0.00</div>
-            </div>
-          </div>
-          <div class="dash-card">
-            <div class="dash-card-icon bg-purple"><i class="fas fa-trophy"></i></div>
-            <div class="dash-card-info">
-              <div class="dash-card-label">أعلى طالب تقييماً</div>
-              <div class="dash-card-value dash-card-name" id="top-student-name">لا يوجد</div>
-              <div class="dash-card-sub" id="top-student-rating">-</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- لوحة الشرف المصغرة -->
-        <div class="honor-board-section" id="honor-board-section">
-          <div class="section-header honor-header">
-            <i class="fas fa-award"></i>
-            <h2>لوحة الشرف</h2>
-          </div>
-          <div class="honor-cards" id="honor-cards-container"></div>
-        </div>
-
-        <!-- تنبيهات سريعة -->
-        <div class="alerts-section" id="dashboard-alerts" style="display:none;">
-          <div class="section-header alerts-header">
-            <i class="fas fa-bell"></i>
-            <h2>تنبيهات</h2>
-          </div>
-          <div class="alerts-list" id="alerts-list"></div>
-        </div>
-
-        <!-- أزرار سريعة -->
-        <div class="quick-actions">
-          <button class="quick-action-btn" onclick="navigateTo('page-students')">
-            <i class="fas fa-users"></i>
-            <span>عرض الطلاب</span>
-          </button>
-          <button class="quick-action-btn" onclick="navigateTo('page-attendance')">
-            <i class="fas fa-clipboard-check"></i>
-            <span>تسجيل الحضور</span>
-          </button>
-          <button class="quick-action-btn" onclick="navigateTo('page-reports')">
-            <i class="fas fa-chart-bar"></i>
-            <span>التقارير</span>
-          </button>
-          <button class="quick-action-btn" onclick="openModal('modal-prayer-times')">
-            <i class="fas fa-mosque"></i>
-            <span>مواقيت الصلاة</span>
-          </button>
-        </div>
-
-      </div>
-    </section>
-
-    <!-- ════════════════════════════════════════
-         الصفحة 2: الطلاب (Students Cards)
-         ════════════════════════════════════════ -->
-    <section class="app-page" id="page-students">
-      <div class="page-container">
-
-        <!-- شريط البحث والفلتر -->
-        <div class="controls-bar">
-          <div class="search-wrapper">
-            <i class="fas fa-search"></i>
-            <input type="text" id="search-input" class="search-input" placeholder="البحث بالاسم...">
-          </div>
-          <select id="filter-select" class="filter-select">
-            <option value="all">الكل</option>
-            <option value="present">الحاضرون</option>
-            <option value="absent">الغائبون</option>
+          <!-- Hidden select for reports.js compatibility -->
+          <select id="dashboard-period-select" style="display:none;">
+            <option value="week" selected>هذا الأسبوع</option>
+            <option value="month">هذا الشهر</option>
+            <option value="year">هذا العام</option>
+            <option value="all">كل الوقت</option>
           </select>
-          <button class="btn-add" id="btn-add-student">
-            <i class="fas fa-plus-circle"></i>
-            <span>إضافة طالب</span>
+        </div>
+
+        <!-- KPI Cards -->
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-icon teal"><i class="fas fa-users"></i></div>
+            <div class="kpi-info">
+              <div class="kpi-label">إجمالي الطلاب</div>
+              <div class="kpi-value" id="total-students-count">0</div>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon green"><i class="fas fa-user-check"></i></div>
+            <div class="kpi-info">
+              <div class="kpi-label">إجمالي الحضور</div>
+              <div class="kpi-value" id="today-attendance-count">0</div>
+              <div class="kpi-sub" id="today-attendance-percent">0%</div>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon gold"><i class="fas fa-star-half-alt"></i></div>
+            <div class="kpi-info">
+              <div class="kpi-label">متوسط التقييم</div>
+              <div class="kpi-value" id="weekly-avg-rating">0.00</div>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon purple"><i class="fas fa-trophy"></i></div>
+            <div class="kpi-info">
+              <div class="kpi-label">أعلى طالب</div>
+              <div class="kpi-value" id="top-student-name" style="font-size:15px;">لا يوجد</div>
+              <div class="kpi-sub" id="top-student-rating">-</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Attendance CTA -->
+        <button class="attendance-cta" id="attendance-cta-btn">
+          <div class="attendance-cta-icon">
+            <i class="fas fa-clipboard-check"></i>
+          </div>
+          <div class="attendance-cta-text">
+            <div class="attendance-cta-title">تسجيل الحضور والتقييمات</div>
+            <div class="attendance-cta-sub">اضغط لتسجيل حضور طلاب اليوم</div>
+          </div>
+          <i class="fas fa-arrow-left attendance-cta-arrow"></i>
+        </button>
+
+        <!-- Honor Board -->
+        <div class="honor-section">
+          <div class="honor-header">
+            <i class="fas fa-award"></i>
+            <h3>لوحة الشرف</h3>
+          </div>
+          <div class="honor-cards" id="honor-cards-container">
+            <div class="honor-empty"><i class="fas fa-info-circle"></i> لا توجد بيانات كافية</div>
+          </div>
+        </div>
+
+        <!-- Alerts Section -->
+        <div class="alerts-section" id="dashboard-alerts" style="display:none;">
+          <div class="alerts-header">
+            <i class="fas fa-exclamation-triangle"></i>
+            <span>تنبيهات غياب</span>
+          </div>
+          <div id="alerts-list"></div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════
+         Page 2: Students Cards
+         ══════════════════════════════════════════ -->
+    <section class="app-page" id="page-students">
+      <div class="page-wrap">
+
+        <!-- Toolbar -->
+        <div class="students-toolbar">
+          <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input type="text" id="cards-search-input" class="search-input" placeholder="البحث بالاسم...">
+          </div>
+          <button class="filter-btn" id="filter-toggle-btn">
+            <i class="fas fa-filter"></i>
+            <span id="filter-label">الكل</span>
           </button>
         </div>
 
-        <!-- شبكة بطاقات الطلاب -->
-        <div class="students-cards-grid" id="students-cards-container">
-          <!-- يتم ملؤها بواسطة renderStudentsCards() -->
+        <!-- Cards Grid -->
+        <div class="students-grid" id="students-cards-container">
+          <!-- populated by renderStudentsCards() -->
         </div>
 
       </div>
+
+      <!-- FAB Add Student -->
+      <button class="fab-add" id="fab-add-student" title="إضافة طالب جديد">
+        <i class="fas fa-plus"></i>
+      </button>
     </section>
 
-    <!-- ════════════════════════════════════════
-         الصفحة 3: الحضور (Attendance Table)
-         ════════════════════════════════════════ -->
-    <section class="app-page" id="page-attendance">
-      <div class="page-container">
-
-        <div class="attendance-page-header">
-          <h2 class="page-title"><i class="fas fa-clipboard-check"></i> تسجيل الحضور والتقييمات</h2>
-          <div class="attendance-date-badge" id="attendance-date-badge"></div>
-        </div>
-
-        <!-- الجدول الرئيسي -->
-        <div class="table-wrapper" id="main-table-wrapper">
-          <div class="table-scroll">
-            <table class="main-table" id="students-table">
-              <thead>
-                <tr>
-                  <th>م</th>
-                  <th>اسم الطالب</th>
-                  <th>الحفظ الحالي</th>
-                  <th>المراجعة</th>
-                  <th>الأجزاء المحفوظة</th>
-                  <th>الحضور</th>
-                  <th>التقييم</th>
-                  <th>ملاحظات اليوم</th>
-                  <th>إجراءات</th>
-                </tr>
-              </thead>
-              <tbody id="students-tbody"></tbody>
-            </table>
-          </div>
-          <div class="save-attendance-wrapper" id="save-button-wrapper">
-            <button class="btn-save-attendance" id="btn-save-attendance">
-              <i class="fas fa-check-double"></i>
-              <span>تسجيل حضور وتقييمات اليوم</span>
-            </button>
-          </div>
-        </div>
-
-      </div>
-    </section>
-
-    <!-- ════════════════════════════════════════
-         الصفحة 4: التقارير (Reports)
-         ════════════════════════════════════════ -->
+    <!-- ══════════════════════════════════════════
+         Page 3: Reports & Analytics
+         ══════════════════════════════════════════ -->
     <section class="app-page" id="page-reports">
-      <div class="page-container">
+      <div class="page-wrap">
 
-        <h2 class="page-title"><i class="fas fa-chart-bar"></i> التقارير الأسبوعية</h2>
-
-        <div class="weekly-section" id="weekly-report">
-          <div class="section-header">
-            <i class="fas fa-calendar-week"></i>
-            <h2>التقرير الأسبوعي</h2>
+        <!-- Period Filter -->
+        <div class="period-filter-row">
+          <div class="section-title" style="margin-bottom:0;">
+            <i class="fas fa-chart-bar"></i>
+            <span>التقارير والتحليلات</span>
           </div>
-          <div class="weekly-scroll">
-            <table class="weekly-table" id="weekly-table">
+          <div class="period-pills">
+            <button class="period-pill report-period-pill active" data-period="week">أسبوع</button>
+            <button class="period-pill report-period-pill" data-period="month">شهر</button>
+            <button class="period-pill report-period-pill" data-period="year">سنة</button>
+            <button class="period-pill report-period-pill" data-period="all">الكل</button>
+          </div>
+        </div>
+
+        <!-- Reports KPI Cards -->
+        <div class="reports-kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-icon teal"><i class="fas fa-users"></i></div>
+            <div class="kpi-info">
+              <div class="kpi-label">إجمالي الطلاب</div>
+              <div class="kpi-value" id="rpt-total-students">0</div>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon green"><i class="fas fa-calendar-check"></i></div>
+            <div class="kpi-info">
+              <div class="kpi-label">إجمالي الحضور</div>
+              <div class="kpi-value" id="rpt-total-present">0</div>
+              <div class="kpi-sub" id="rpt-attendance-pct">0%</div>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon gold"><i class="fas fa-star"></i></div>
+            <div class="kpi-info">
+              <div class="kpi-label">متوسط التقييم</div>
+              <div class="kpi-value" id="rpt-avg-rating">0.00</div>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon blue"><i class="fas fa-book-open"></i></div>
+            <div class="kpi-info">
+              <div class="kpi-label">الأجزاء المحفوظة</div>
+              <div class="kpi-value" id="rpt-total-parts" style="font-size:15px;">0/0</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Charts: Line (full width) -->
+        <div class="charts-section">
+          <div class="chart-card">
+            <div class="chart-card-header">
+              <div class="chart-card-icon"><i class="fas fa-chart-line"></i></div>
+              <span class="chart-card-title">تطور متوسط التقييم اليومي</span>
+            </div>
+            <div class="chart-canvas-wrap" style="height:220px;">
+              <canvas id="rpt-line-chart"></canvas>
+            </div>
+          </div>
+
+          <!-- Charts Row: Bar + Pie -->
+          <div class="charts-row-2">
+            <div class="chart-card">
+              <div class="chart-card-header">
+                <div class="chart-card-icon" style="background:linear-gradient(135deg,#D97706,#92400E);">
+                  <i class="fas fa-chart-bar"></i>
+                </div>
+                <span class="chart-card-title">حضور الطلاب</span>
+              </div>
+              <div class="chart-canvas-wrap" style="height:200px;">
+                <canvas id="rpt-bar-chart"></canvas>
+              </div>
+            </div>
+            <div class="chart-card">
+              <div class="chart-card-header">
+                <div class="chart-card-icon" style="background:linear-gradient(135deg,#7C3AED,#5B21B6);">
+                  <i class="fas fa-chart-pie"></i>
+                </div>
+                <span class="chart-card-title">نسبة الحضور</span>
+              </div>
+              <div class="chart-canvas-wrap" style="height:200px;">
+                <canvas id="rpt-pie-chart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="reports-summary">
+          <div class="summary-card">
+            <div class="summary-card-title"><i class="fas fa-medal"></i> أعلى حضوراً</div>
+            <div id="summary-top-attendance"></div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-card-title"><i class="fas fa-star"></i> أعلى تقييماً</div>
+            <div id="summary-top-rating"></div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-card-title"><i class="fas fa-book"></i> أكثر حفظاً</div>
+            <div id="summary-top-parts"></div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-card-title" style="color:var(--c-danger);"><i class="fas fa-user-times" style="color:var(--c-danger);"></i> أكثر غياباً</div>
+            <div id="summary-low-attendance"></div>
+          </div>
+        </div>
+
+        <!-- Export Buttons -->
+        <div class="reports-export-bar">
+          <button class="btn-export-action btn-export-excel" onclick="exportReportsExcel()">
+            <i class="fas fa-file-excel"></i> Excel
+          </button>
+          <button class="btn-export-action btn-export-pdf" onclick="exportReportsPDF()">
+            <i class="fas fa-file-pdf"></i> PDF
+          </button>
+          <button class="btn-export-action btn-export-print" onclick="printReports()">
+            <i class="fas fa-print"></i> طباعة
+          </button>
+        </div>
+
+        <!-- Students Performance Table -->
+        <div class="reports-table-card">
+          <div class="reports-table-header">
+            <div class="reports-table-title">
+              <i class="fas fa-table" style="color:var(--c-primary-light);"></i>
+              تفصيل أداء الطلاب
+            </div>
+            <div class="reports-search">
+              <i class="fas fa-search"></i>
+              <input type="text" id="reports-search-input" class="reports-search-input" placeholder="بحث...">
+            </div>
+          </div>
+          <div class="reports-table-scroll">
+            <table class="reports-table">
               <thead>
                 <tr>
                   <th>م</th>
-                  <th>اسم الطالب</th>
-                  <th>أيام الحضور</th>
-                  <th>نسبة الحضور</th>
-                  <th>متوسط التقييم</th>
-                  <th>الأجزاء المحفوظة</th>
-                  <th>الرسم البياني</th>
+                  <th data-sort="name" onclick="sortReportsTable('name')" style="cursor:pointer;">
+                    الاسم <i class="fas fa-sort rpt-sort-icon"></i>
+                  </th>
+                  <th data-sort="presentDays" onclick="sortReportsTable('presentDays')" style="cursor:pointer;">
+                    الحضور <i class="fas fa-sort rpt-sort-icon"></i>
+                  </th>
+                  <th data-sort="pct" onclick="sortReportsTable('pct')" style="cursor:pointer;">
+                    النسبة <i class="fas fa-sort rpt-sort-icon"></i>
+                  </th>
+                  <th data-sort="avgRating" onclick="sortReportsTable('avgRating')" style="cursor:pointer;">
+                    التقييم <i class="fas fa-sort rpt-sort-icon"></i>
+                  </th>
+                  <th data-sort="parts" onclick="sortReportsTable('parts')" style="cursor:pointer;">
+                    الأجزاء <i class="fas fa-sort rpt-sort-icon"></i>
+                  </th>
+                  <th>آخر حضور</th>
+                  <th>الملف</th>
                 </tr>
               </thead>
-              <tbody id="weekly-tbody"></tbody>
+              <tbody id="rpt-table-body">
+                <tr><td colspan="8" style="text-align:center;padding:40px;color:var(--c-text-light);">لا توجد بيانات</td></tr>
+              </tbody>
             </table>
           </div>
+        </div>
+
+        <!-- Weekly Report Table (hidden — for reports.js compat) -->
+        <div style="display:none;">
+          <table id="weekly-table">
+            <tbody id="weekly-tbody"></tbody>
+          </table>
         </div>
 
       </div>
     </section>
 
-    <!-- ════════════════════════════════════════
-         الصفحة 5: الأدوات والإعدادات
-         ════════════════════════════════════════ -->
+    <!-- ══════════════════════════════════════════
+         Page 4: Settings & Tools
+         ══════════════════════════════════════════ -->
     <section class="app-page" id="page-settings">
-      <div class="page-container">
+      <div class="page-wrap">
 
-        <h2 class="page-title"><i class="fas fa-cogs"></i> أدوات وإعدادات</h2>
-
-        <!-- أدوات المسؤول -->
-        <div class="admin-tools-section" id="admin-tools-section">
-          <div class="section-header admin-header">
+        <!-- Admin Tools -->
+        <div class="settings-section">
+          <div class="settings-header">
             <i class="fas fa-shield-alt"></i>
-            <h2>أدوات المسؤول</h2>
+            <h3>أدوات المسؤول</h3>
           </div>
-          <div class="admin-tools-body">
-            <div class="admin-tool-card">
-              <div class="admin-tool-icon"><i class="fas fa-flask"></i></div>
-              <div class="admin-tool-info">
-                <h4>إنشاء بيانات تجريبية (سنة)</h4>
-                <p>إنشاء بيانات حضور وتقييم عشوائية لمدة سنة (الأحد والخميس)</p>
+          <div class="settings-body">
+            <div class="setting-row">
+              <div class="setting-row-icon"><i class="fas fa-flask"></i></div>
+              <div class="setting-row-info">
+                <div class="setting-row-title">بيانات تجريبية</div>
+                <div class="setting-row-sub">إنشاء طلاب وسجلات عشوائية للاختبار</div>
               </div>
-              <button class="btn-admin btn-admin-generate" id="btn-generate-mock">
+              <button class="btn-setting btn-setting-primary" id="btn-generate-mock">
                 <i class="fas fa-magic"></i> إنشاء
               </button>
             </div>
-            <div class="admin-tool-card">
-              <div class="admin-tool-icon admin-tool-icon-danger"><i class="fas fa-eraser"></i></div>
-              <div class="admin-tool-info">
-                <h4>حذف البيانات التجريبية</h4>
-                <p>حذف البيانات التجريبية فقط مع الحفاظ على البيانات الحقيقية</p>
-              </div>
-              <button class="btn-admin btn-admin-delete" id="btn-delete-mock">
-                <i class="fas fa-trash"></i> حذف التجريبية
-              </button>
-            </div>
-            <div class="admin-tool-card" id="mock-status-card" style="display:none;">
-              <div class="admin-tool-icon" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8);">
+            <div id="mock-status-card" style="display:none;" class="setting-row">
+              <div class="setting-row-icon" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);">
                 <i class="fas fa-info-circle"></i>
               </div>
-              <div class="admin-tool-info">
-                <h4>حالة البيانات التجريبية</h4>
-                <p id="mock-status-text">لا توجد بيانات تجريبية</p>
+              <div class="setting-row-info">
+                <div class="setting-row-title">حالة البيانات التجريبية</div>
+                <div class="setting-row-sub" id="mock-status-text">لا توجد بيانات تجريبية</div>
               </div>
+            </div>
+            <div class="setting-row">
+              <div class="setting-row-icon" style="background:linear-gradient(135deg,#EF5350,#dc2626);">
+                <i class="fas fa-eraser"></i>
+              </div>
+              <div class="setting-row-info">
+                <div class="setting-row-title">حذف البيانات التجريبية</div>
+                <div class="setting-row-sub">حذف الطلاب التجريبيين فقط</div>
+              </div>
+              <button class="btn-setting" style="background:var(--c-danger-bg);color:var(--c-danger);border:1px solid rgba(220,38,38,.2);" id="btn-delete-mock">
+                <i class="fas fa-trash"></i> حذف
+              </button>
             </div>
           </div>
         </div>
 
-        <!-- إعدادات التطبيق -->
+        <!-- App Settings -->
         <div class="settings-section">
-          <div class="section-header">
+          <div class="settings-header">
             <i class="fas fa-sliders-h"></i>
-            <h2>إعدادات التطبيق</h2>
+            <h3>إعدادات التطبيق</h3>
           </div>
           <div class="settings-body">
-            <div class="setting-item">
-              <div class="setting-icon"><i class="fas fa-moon"></i></div>
-              <div class="setting-info">
-                <h4>الوضع الليلي</h4>
-                <p>تفعيل أو تعطيل وضع الظلام</p>
+            <div class="setting-row">
+              <div class="setting-row-icon"><i class="fas fa-moon"></i></div>
+              <div class="setting-row-info">
+                <div class="setting-row-title">الوضع الليلي</div>
+                <div class="setting-row-sub">تفعيل أو تعطيل وضع الظلام</div>
               </div>
-              <button class="btn-setting-action" id="btn-dark-mode-settings" onclick="document.getElementById('btn-dark-mode').click()">
-                <i class="fas fa-toggle-off"></i>
+              <button class="btn-setting-icon" onclick="document.getElementById('btn-dark-mode').click();">
+                <i class="fas fa-moon"></i>
               </button>
             </div>
-            <div class="setting-item">
-              <div class="setting-icon" style="background: linear-gradient(135deg, #22c55e, #16a34a);"><i class="fas fa-file-excel"></i></div>
-              <div class="setting-info">
-                <h4>تصدير Excel</h4>
-                <p>تصدير جدول الطلاب كملف Excel</p>
+            <div class="setting-row">
+              <div class="setting-row-icon" style="background:linear-gradient(135deg,#22c55e,#16a34a);">
+                <i class="fas fa-file-excel"></i>
               </div>
-              <button class="btn-setting-action" style="background: linear-gradient(135deg, #22c55e, #16a34a);" onclick="exportToExcel()">
+              <div class="setting-row-info">
+                <div class="setting-row-title">تصدير Excel</div>
+                <div class="setting-row-sub">تصدير بيانات الطلاب كملف Excel</div>
+              </div>
+              <button class="btn-setting-icon" style="background:linear-gradient(135deg,#22c55e,#16a34a);" onclick="exportToExcel()">
                 <i class="fas fa-download"></i>
               </button>
             </div>
-            <div class="setting-item">
-              <div class="setting-icon" style="background: linear-gradient(135deg, #ef4444, #dc2626);"><i class="fas fa-file-pdf"></i></div>
-              <div class="setting-info">
-                <h4>تصدير PDF</h4>
-                <p>تصدير التقرير كملف PDF</p>
+            <div class="setting-row">
+              <div class="setting-row-icon" style="background:linear-gradient(135deg,#ef4444,#dc2626);">
+                <i class="fas fa-file-pdf"></i>
               </div>
-              <button class="btn-setting-action" style="background: linear-gradient(135deg, #ef4444, #dc2626);" onclick="exportToPDF()">
+              <div class="setting-row-info">
+                <div class="setting-row-title">تصدير PDF</div>
+                <div class="setting-row-sub">تصدير التقرير الكامل كملف PDF</div>
+              </div>
+              <button class="btn-setting-icon" style="background:linear-gradient(135deg,#ef4444,#dc2626);" onclick="exportToPDF()">
                 <i class="fas fa-download"></i>
               </button>
             </div>
-            <div class="setting-item">
-              <div class="setting-icon" style="background: linear-gradient(135deg, var(--color-primary-light), var(--color-primary));"><i class="fas fa-database"></i></div>
-              <div class="setting-info">
-                <h4>نسخة احتياطية</h4>
-                <p>حفظ نسخة احتياطية كاملة (JSON)</p>
+            <div class="setting-row">
+              <div class="setting-row-icon"><i class="fas fa-database"></i></div>
+              <div class="setting-row-info">
+                <div class="setting-row-title">نسخة احتياطية</div>
+                <div class="setting-row-sub">تصدير نسخة احتياطية كاملة (JSON)</div>
               </div>
-              <button class="btn-setting-action" onclick="handleExport()">
+              <button class="btn-setting-icon" onclick="exportToJSON()">
                 <i class="fas fa-download"></i>
               </button>
             </div>
-            <div class="setting-item">
-              <div class="setting-icon" style="background: linear-gradient(135deg, var(--color-gold-light), var(--color-gold));"><i class="fas fa-upload"></i></div>
-              <div class="setting-info">
-                <h4>استيراد بيانات</h4>
-                <p>استيراد نسخة احتياطية JSON</p>
+            <div class="setting-row">
+              <div class="setting-row-icon" style="background:linear-gradient(135deg,#C8A951,#A07830);">
+                <i class="fas fa-upload"></i>
               </div>
-              <button class="btn-setting-action" style="background: linear-gradient(135deg, var(--color-gold-light), var(--color-gold));" onclick="document.getElementById('import-file').click()">
+              <div class="setting-row-info">
+                <div class="setting-row-title">استيراد بيانات</div>
+                <div class="setting-row-sub">استيراد نسخة احتياطية JSON</div>
+              </div>
+              <button class="btn-setting-icon" style="background:linear-gradient(135deg,#C8A951,#A07830);" onclick="document.getElementById('import-file').click()">
                 <i class="fas fa-upload"></i>
               </button>
             </div>
-            <div class="setting-item">
-              <div class="setting-icon" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8);"><i class="fas fa-bell"></i></div>
-              <div class="setting-info">
-                <h4>إشعارات الصلاة</h4>
-                <p>إعدادات التذكير بمواقيت الصلاة</p>
+            <div class="setting-row">
+              <div class="setting-row-icon" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);">
+                <i class="fas fa-bell"></i>
               </div>
-              <button class="btn-setting-action" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8);" onclick="openModal('modal-prayer-times')">
+              <div class="setting-row-info">
+                <div class="setting-row-title">إشعارات الصلاة</div>
+                <div class="setting-row-sub">إعدادات التذكير بمواقيت الصلاة</div>
+              </div>
+              <button class="btn-setting-icon" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);" onclick="openModal('modal-prayer-times')">
                 <i class="fas fa-sliders-h"></i>
               </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- About -->
+        <div class="settings-section">
+          <div class="settings-header" style="background:linear-gradient(135deg,#0F4C3A,#1B7A52);">
+            <i class="fas fa-info-circle"></i>
+            <h3>حول التطبيق</h3>
+          </div>
+          <div class="settings-body">
+            <div class="setting-row">
+              <div class="setting-row-icon" style="background:linear-gradient(135deg,#0F4C3A,#1B7A52);">
+                <i class="fas fa-mosque"></i>
+              </div>
+              <div class="setting-row-info">
+                <div class="setting-row-title">حلقتنا v4.0</div>
+                <div class="setting-row-sub">نظام متكامل لإدارة حلقات تحفيظ القرآن الكريم</div>
+              </div>
             </div>
           </div>
         </div>
@@ -483,11 +611,97 @@
   </main>
 
   <!-- ═══════════════════════════════════════════════
-       جميع الـ Modals محفوظة كما هي (لا تعديل على IDs)
+       Bottom Navigation Bar
+       ═══════════════════════════════════════════════ -->
+  <nav class="bottom-nav" id="bottom-nav">
+    <button class="nav-item active" data-page="page-home">
+      <i class="fas fa-home"></i>
+      <span>الرئيسية</span>
+    </button>
+    <button class="nav-item" data-page="page-students">
+      <i class="fas fa-users"></i>
+      <span>الطلاب</span>
+    </button>
+
+    <!-- Center FAB — Attendance -->
+    <div class="nav-fab-wrap">
+      <button class="nav-fab" id="nav-fab-btn" title="تسجيل الحضور">
+        <i class="fas fa-clipboard-check"></i>
+      </button>
+      <span class="nav-fab-label">حضور</span>
+    </div>
+
+    <button class="nav-item" data-page="page-reports">
+      <i class="fas fa-chart-bar"></i>
+      <span>التقارير</span>
+    </button>
+    <button class="nav-item" data-page="page-settings">
+      <i class="fas fa-cogs"></i>
+      <span>أدوات</span>
+    </button>
+  </nav>
+
+  <!-- ═══════════════════════════════════════════════
+       Modals — All IDs Preserved
        ═══════════════════════════════════════════════ -->
 
-  <!-- Modal: إضافة طالب -->
-  <div class="modal-overlay" id="modal-add-student">
+  <!-- Modal: Attendance (Full Screen) -->
+  <div class="modal-overlay" id="modal-attendance" onclick="closeModalOnBackdrop(event,'modal-attendance')">
+    <div class="modal-content modal-fullscreen" style="max-width:900px;">
+      <div class="attendance-modal-header">
+        <div class="attendance-modal-title">
+          <i class="fas fa-clipboard-check"></i>
+          تسجيل الحضور والتقييمات
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span class="attendance-date-badge" id="attendance-date-badge"></span>
+          <button onclick="closeModal('modal-attendance')" style="background:rgba(255,255,255,.15);border:none;color:#fff;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      </div>
+      <div class="attendance-controls">
+        <div style="position:relative;flex:1;">
+          <i class="fas fa-search" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);color:var(--c-text-light);font-size:13px;"></i>
+          <input type="text" id="search-input" class="search-input" style="padding-right:34px;height:38px;width:100%;" placeholder="البحث بالاسم..." oninput="filterStudents()">
+        </div>
+        <select id="filter-select" class="filter-select" style="height:38px;min-width:120px;" onchange="filterStudents()">
+          <option value="all">جميع الطلاب</option>
+          <option value="present">الحاضرون</option>
+          <option value="absent">الغائبون</option>
+        </select>
+      </div>
+      <div class="modal-fullscreen-inner">
+        <div class="table-scroll">
+          <table class="main-table">
+            <thead>
+              <tr>
+                <th>م</th>
+                <th>اسم الطالب</th>
+                <th>الحفظ الحالي</th>
+                <th>المراجعة</th>
+                <th>الأجزاء</th>
+                <th>الحضور</th>
+                <th>التقييم</th>
+                <th>ملاحظات</th>
+                <th>إجراءات</th>
+              </tr>
+            </thead>
+            <tbody id="students-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="save-attendance-wrapper">
+        <button class="btn-save-attendance" id="btn-save-attendance">
+          <i class="fas fa-check-double"></i>
+          تسجيل حضور وتقييمات اليوم
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Add Student -->
+  <div class="modal-overlay" id="modal-add-student" onclick="closeModalOnBackdrop(event,'modal-add-student')">
     <div class="modal-content">
       <div class="modal-title">
         <i class="fas fa-user-plus"></i>
@@ -501,40 +715,44 @@
     </div>
   </div>
 
-  <!-- Modal: تعديل بيانات الطالب -->
-  <div class="modal-overlay" id="modal-edit-student">
+  <!-- Modal: Edit Student -->
+  <div class="modal-overlay" id="modal-edit-student" onclick="closeModalOnBackdrop(event,'modal-edit-student')">
     <div class="modal-content">
       <div class="modal-title">
         <i class="fas fa-user-edit"></i>
         <span>تعديل بيانات الطالب</span>
       </div>
       <input type="hidden" id="edit-student-id">
-      <div class="form-group" style="margin-bottom: 15px;">
-        <label style="display:block; margin-bottom:5px; font-size:14px; font-weight:bold;">اسم الطالب</label>
+      <div style="margin-bottom:14px;">
+        <label style="display:block;margin-bottom:6px;font-size:13px;font-weight:700;color:var(--c-text-sec);">اسم الطالب</label>
         <input type="text" id="edit-student-name" class="modal-input" placeholder="الاسم الجديد..." style="margin-bottom:0;">
       </div>
-      <div class="form-group" style="margin-bottom:15px; padding:10px; background:var(--color-surface-2); border-radius:8px; border:1px solid var(--color-border);">
-        <label style="display:block; margin-bottom:8px; font-size:14px; font-weight:bold; color:var(--color-primary);"><i class="fas fa-book-open"></i> الحفظ الحالي</label>
-        <div style="display:flex; flex-direction:column; gap:8px;">
+      <div style="margin-bottom:14px;padding:12px;background:var(--c-surface-2);border-radius:var(--r-sm);border:1px solid var(--c-border-light);">
+        <label style="display:block;margin-bottom:8px;font-size:13px;font-weight:800;color:var(--c-primary-light);">
+          <i class="fas fa-book-open"></i> الحفظ الحالي
+        </label>
+        <div style="display:flex;flex-direction:column;gap:8px;">
           <select id="edit-mem-surah" class="modal-input" style="margin-bottom:0;"></select>
-          <div style="display:flex; gap:8px; align-items:center;">
-            <input type="number" id="edit-mem-from" class="modal-input" placeholder="من آية" style="margin-bottom:0; flex:1;">
-            <input type="number" id="edit-mem-to" class="modal-input" placeholder="إلى آية" style="margin-bottom:0; flex:1;">
-            <label style="display:flex; align-items:center; gap:4px; white-space:nowrap; font-size:13px;">
-              <input type="checkbox" id="edit-mem-full" onchange="document.getElementById('edit-mem-from').disabled=this.checked; document.getElementById('edit-mem-to').disabled=this.checked;"> كاملة
+          <div style="display:flex;gap:8px;align-items:center;">
+            <input type="number" id="edit-mem-from" class="modal-input" placeholder="من آية" style="margin-bottom:0;flex:1;">
+            <input type="number" id="edit-mem-to"   class="modal-input" placeholder="إلى آية" style="margin-bottom:0;flex:1;">
+            <label style="display:flex;align-items:center;gap:4px;white-space:nowrap;font-size:13px;">
+              <input type="checkbox" id="edit-mem-full"> كاملة
             </label>
           </div>
         </div>
       </div>
-      <div class="form-group" style="margin-bottom:20px; padding:10px; background:var(--color-surface-2); border-radius:8px; border:1px solid var(--color-border);">
-        <label style="display:block; margin-bottom:8px; font-size:14px; font-weight:bold; color:var(--color-primary);"><i class="fas fa-book-reader"></i> المراجعة المطلوبة</label>
-        <div style="display:flex; flex-direction:column; gap:8px;">
+      <div style="margin-bottom:20px;padding:12px;background:var(--c-surface-2);border-radius:var(--r-sm);border:1px solid var(--c-border-light);">
+        <label style="display:block;margin-bottom:8px;font-size:13px;font-weight:800;color:var(--c-primary-light);">
+          <i class="fas fa-book-reader"></i> المراجعة المطلوبة
+        </label>
+        <div style="display:flex;flex-direction:column;gap:8px;">
           <select id="edit-rev-surah" class="modal-input" style="margin-bottom:0;"></select>
-          <div style="display:flex; gap:8px; align-items:center;">
-            <input type="number" id="edit-rev-from" class="modal-input" placeholder="من آية" style="margin-bottom:0; flex:1;">
-            <input type="number" id="edit-rev-to" class="modal-input" placeholder="إلى آية" style="margin-bottom:0; flex:1;">
-            <label style="display:flex; align-items:center; gap:4px; white-space:nowrap; font-size:13px;">
-              <input type="checkbox" id="edit-rev-full" onchange="document.getElementById('edit-rev-from').disabled=this.checked; document.getElementById('edit-rev-to').disabled=this.checked;"> كاملة
+          <div style="display:flex;gap:8px;align-items:center;">
+            <input type="number" id="edit-rev-from" class="modal-input" placeholder="من آية" style="margin-bottom:0;flex:1;">
+            <input type="number" id="edit-rev-to"   class="modal-input" placeholder="إلى آية" style="margin-bottom:0;flex:1;">
+            <label style="display:flex;align-items:center;gap:4px;white-space:nowrap;font-size:13px;">
+              <input type="checkbox" id="edit-rev-full"> كاملة
             </label>
           </div>
         </div>
@@ -546,15 +764,17 @@
     </div>
   </div>
 
-  <!-- Modal: الرسم البياني -->
-  <div class="modal-overlay" id="modal-chart">
+  <!-- Modal: Student Chart -->
+  <div class="modal-overlay" id="modal-chart" onclick="closeModalOnBackdrop(event,'modal-chart')">
     <div class="modal-content modal-lg">
       <div class="chart-header">
         <div class="modal-title" id="chart-student-name" style="margin-bottom:0;">
           <i class="fas fa-chart-line"></i>
           <span>تطور أداء الطالب</span>
         </div>
-        <button class="btn-close-chart" id="btn-close-chart"><i class="fas fa-times"></i></button>
+        <button class="btn-close-chart" id="btn-close-chart" onclick="closeModal('modal-chart')">
+          <i class="fas fa-times"></i>
+        </button>
       </div>
       <div class="chart-container">
         <canvas id="student-chart"></canvas>
@@ -562,19 +782,19 @@
     </div>
   </div>
 
-  <!-- Modal: الملف الشخصي للطالب -->
-  <div class="modal-overlay" id="modal-student-profile">
-    <div class="modal-content modal-fullscreen">
-      <div class="modal-title" style="justify-content:space-between; border-bottom:1px solid var(--color-border); padding-bottom:12px; margin-bottom:16px;">
-        <div style="display:flex; align-items:center; gap:10px;">
-          <i class="fas fa-user-graduate"></i>
-          <span id="profile-student-name">اسم الطالب</span>
+  <!-- Modal: Student Profile (Full Screen) -->
+  <div class="modal-overlay" id="modal-student-profile" onclick="closeModalOnBackdrop(event,'modal-student-profile')">
+    <div class="modal-content modal-fullscreen" style="max-width:900px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--c-border-light);">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <i class="fas fa-user-graduate" style="font-size:20px;color:var(--c-primary-light);"></i>
+          <span id="profile-student-name" style="font-size:18px;font-weight:800;color:var(--c-text);">اسم الطالب</span>
         </div>
-        <div style="display:flex; gap:8px;">
-          <button class="btn-secondary" style="padding:6px 12px; font-size:13px;" onclick="exportStudentExcel()">
+        <div style="display:flex;gap:8px;align-items:center;">
+          <button class="btn-secondary" style="padding:6px 12px;font-size:12px;height:34px;" onclick="exportStudentExcel()">
             <i class="fas fa-file-excel"></i> Excel
           </button>
-          <button class="btn-secondary" style="padding:6px 12px; font-size:13px;" onclick="printStudentProfile()">
+          <button class="btn-secondary" style="padding:6px 12px;font-size:12px;height:34px;" onclick="printStudentProfile()">
             <i class="fas fa-print"></i> طباعة
           </button>
           <button class="btn-close-chart" onclick="closeModal('modal-student-profile')">
@@ -582,71 +802,75 @@
           </button>
         </div>
       </div>
-      <div class="profile-layout">
-        <div class="profile-sidebar">
-          <div class="profile-card">
-            <h3 class="profile-card-title"><i class="fas fa-book-open"></i> الحفظ والمراجعة</h3>
-            <div id="profile-sidebar-info"></div>
-          </div>
-          <div class="profile-actions" style="margin-top:16px; display:flex; flex-direction:column; gap:8px;">
-            <button class="btn-primary" style="width:100%;" onclick="openEditStudentFromProfile()">
-              <i class="fas fa-edit"></i> تعديل بيانات الطالب
-            </button>
-            <button class="btn-secondary" style="width:100%; border-color:var(--color-danger); color:var(--color-danger);" onclick="deleteStudentFromProfile()">
-              <i class="fas fa-trash-alt"></i> حذف الطالب
-            </button>
-          </div>
-        </div>
-        <div class="profile-main">
-          <div class="profile-filters">
-            <button class="filter-period-btn active" data-period="week" onclick="updateProfileView('week')">أسبوعياً</button>
-            <button class="filter-period-btn" data-period="month" onclick="updateProfileView('month')">شهرياً</button>
-            <button class="filter-period-btn" data-period="year" onclick="updateProfileView('year')">سنوياً</button>
-            <button class="filter-period-btn" data-period="all" onclick="updateProfileView('all')">كل الوقت</button>
-          </div>
-          <div class="profile-stats-grid">
-            <div class="profile-stat-box">
-              <div class="stat-box-title">إجمالي أيام الحضور</div>
-              <div class="stat-box-value" id="prof-stat-attendance-days">0</div>
+      <div class="modal-fullscreen-inner">
+        <div class="profile-layout">
+          <!-- Sidebar -->
+          <div class="profile-sidebar">
+            <div class="profile-card">
+              <h3 class="profile-card-title"><i class="fas fa-book-open"></i> الحفظ والمراجعة</h3>
+              <div id="profile-sidebar-info"></div>
             </div>
-            <div class="profile-stat-box">
-              <div class="stat-box-title">نسبة الحضور</div>
-              <div class="stat-box-value" id="prof-stat-attendance-rate">0%</div>
-            </div>
-            <div class="profile-stat-box">
-              <div class="stat-box-title">متوسط التقييم</div>
-              <div class="stat-box-value" id="prof-stat-avg-rating">0.0</div>
-            </div>
-            <div class="profile-stat-box">
-              <div class="stat-box-title">أفضل تقييم</div>
-              <div class="stat-box-value" id="prof-stat-best-rating">0</div>
+            <div class="profile-actions">
+              <button class="btn-primary" style="width:100%;" onclick="openEditStudentFromProfile()">
+                <i class="fas fa-edit"></i> تعديل البيانات
+              </button>
+              <button class="btn-secondary" style="width:100%;border-color:var(--c-danger);color:var(--c-danger);" onclick="deleteStudentFromProfile()">
+                <i class="fas fa-trash-alt"></i> حذف الطالب
+              </button>
             </div>
           </div>
-          <div class="profile-charts">
-            <h3 class="profile-card-title"><i class="fas fa-chart-area"></i> تطور التقييم والحضور</h3>
-            <div style="height:250px; width:100%;">
-              <canvas id="profile-chart"></canvas>
+          <!-- Main Content -->
+          <div class="profile-main">
+            <div class="profile-filters">
+              <button class="filter-period-btn active" data-period="week"  onclick="updateProfileView('week')">أسبوعياً</button>
+              <button class="filter-period-btn"        data-period="month" onclick="updateProfileView('month')">شهرياً</button>
+              <button class="filter-period-btn"        data-period="year"  onclick="updateProfileView('year')">سنوياً</button>
+              <button class="filter-period-btn"        data-period="all"   onclick="updateProfileView('all')">كل الوقت</button>
             </div>
-          </div>
-          <div class="profile-timeline-container">
-            <h3 class="profile-card-title"><i class="fas fa-history"></i> السجل الكامل والملاحظات</h3>
-            <div class="timeline" id="profile-timeline"></div>
+            <div class="profile-stats-grid">
+              <div class="profile-stat-box">
+                <div class="stat-box-title">إجمالي أيام الحضور</div>
+                <div class="stat-box-value" id="prof-stat-attendance-days">0</div>
+              </div>
+              <div class="profile-stat-box">
+                <div class="stat-box-title">نسبة الحضور</div>
+                <div class="stat-box-value" id="prof-stat-attendance-rate">0%</div>
+              </div>
+              <div class="profile-stat-box">
+                <div class="stat-box-title">متوسط التقييم</div>
+                <div class="stat-box-value" id="prof-stat-avg-rating">0.0</div>
+              </div>
+              <div class="profile-stat-box">
+                <div class="stat-box-title">أفضل تقييم</div>
+                <div class="stat-box-value" id="prof-stat-best-rating">0</div>
+              </div>
+            </div>
+            <div class="profile-charts">
+              <h3 class="profile-card-title"><i class="fas fa-chart-area"></i> تطور التقييم والحضور</h3>
+              <div style="height:250px;width:100%;">
+                <canvas id="profile-chart"></canvas>
+              </div>
+            </div>
+            <div class="profile-timeline-container">
+              <h3 class="profile-card-title" style="margin-bottom:12px;"><i class="fas fa-history"></i> السجل الكامل</h3>
+              <div class="timeline" id="profile-timeline"></div>
+            </div>
           </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Modal: تأكيد مخصص -->
-  <div class="modal-overlay" id="modal-custom-confirm">
+  <!-- Modal: Confirm -->
+  <div class="modal-overlay" id="modal-custom-confirm" onclick="closeModalOnBackdrop(event,'modal-custom-confirm')">
     <div class="modal-content" style="max-width:440px;">
-      <div class="modal-title" style="color:var(--color-danger);">
-        <i class="fas fa-exclamation-triangle" style="color:var(--color-danger);"></i>
+      <div class="modal-title" style="color:var(--c-danger);">
+        <i class="fas fa-exclamation-triangle" style="color:var(--c-danger);"></i>
         <span id="confirm-title">تأكيد العملية</span>
       </div>
-      <p id="confirm-message" style="font-size:15px; line-height:1.8; margin-bottom:20px; color:var(--color-text-sec);"></p>
-      <div class="modal-actions" style="justify-content:flex-end;">
-        <button class="btn-primary" id="btn-confirm-yes" style="background:linear-gradient(135deg, #f87171, #dc2626);">
+      <p id="confirm-message" style="font-size:15px;line-height:1.9;margin-bottom:20px;color:var(--c-text-sec);white-space:pre-line;"></p>
+      <div class="modal-actions">
+        <button class="btn-primary" id="btn-confirm-yes" style="background:linear-gradient(135deg,#f87171,#dc2626);">
           <i class="fas fa-check"></i> نعم، تأكيد
         </button>
         <button class="btn-secondary" id="btn-confirm-no">
@@ -656,24 +880,19 @@
     </div>
   </div>
 
-  <!-- قائمة السياق (Long Press) -->
-  <div class="context-menu" id="context-menu" style="display:none;">
-    <button class="context-menu-item" id="ctx-profile"><i class="fas fa-user"></i> عرض الملف الشخصي</button>
-    <button class="context-menu-item" id="ctx-edit"><i class="fas fa-edit"></i> تعديل الاسم</button>
-    <button class="context-menu-item context-menu-danger" id="ctx-delete"><i class="fas fa-trash-alt"></i> حذف الطالب</button>
-  </div>
-
-  <!-- Modal: مواقيت الصلاة -->
-  <div class="modal-overlay" id="modal-prayer-times">
+  <!-- Modal: Prayer Times -->
+  <div class="modal-overlay" id="modal-prayer-times" onclick="closeModalOnBackdrop(event,'modal-prayer-times')">
     <div class="modal-content" style="max-width:520px;">
-      <div class="modal-title" style="color:var(--color-primary);">
-        <i class="fas fa-mosque" style="color:var(--color-primary);"></i>
+      <div class="modal-title" style="color:var(--c-primary-light);">
+        <i class="fas fa-mosque"></i>
         <span>مواقيت الصلاة لليوم</span>
       </div>
       <div class="prayer-times-grid" id="prayer-times-grid">
-        <div class="prayer-loading-text"><i class="fas fa-spinner fa-spin"></i> جاري التحميل...</div>
+        <div style="grid-column:1/-1;text-align:center;padding:20px;color:var(--c-text-light);">
+          <i class="fas fa-spinner fa-spin"></i> جاري التحميل...
+        </div>
       </div>
-      <!-- إعدادات الإشعارات -->
+      <!-- Notification Settings -->
       <div class="notif-settings-section" id="notif-settings-section">
         <div class="notif-settings-header">
           <i class="fas fa-bell"></i>
@@ -682,7 +901,7 @@
         </div>
         <div class="notif-reminder-row">
           <label class="notif-label" for="notif-reminder-select">
-            <i class="fas fa-clock"></i> التذكير قبل الأذان بـ:
+            <i class="fas fa-clock"></i> التذكير قبل:
           </label>
           <select id="notif-reminder-select" class="notif-select">
             <option value="5">5 دقائق</option>
@@ -702,10 +921,10 @@
         </div>
         <div class="notif-hint" id="notif-hint-text">
           <i class="fas fa-info-circle"></i>
-          ستصلك إشعارات قبل كل صلاة عند فتح التطبيق.
+          <span>ستصلك إشعارات قبل كل صلاة عند فتح التطبيق.</span>
         </div>
       </div>
-      <div class="modal-actions" style="justify-content:center; margin-top:16px;">
+      <div class="modal-actions" style="justify-content:center;margin-top:16px;">
         <button class="btn-secondary" onclick="closeModal('modal-prayer-times')">
           <i class="fas fa-times"></i> إغلاق
         </button>
@@ -713,41 +932,22 @@
     </div>
   </div>
 
+  <!-- Context Menu -->
+  <div class="context-menu" id="context-menu" style="display:none;">
+    <button class="context-menu-item" id="ctx-profile"><i class="fas fa-user"></i> عرض الملف الشخصي</button>
+    <button class="context-menu-item" id="ctx-edit"><i class="fas fa-edit"></i> تعديل البيانات</button>
+    <button class="context-menu-item context-menu-danger" id="ctx-delete"><i class="fas fa-trash-alt"></i> حذف الطالب</button>
+  </div>
+
   <!-- Toast Container -->
   <div id="toast-container"></div>
 
-  <!-- ═══════════════ Bottom Navigation Bar ═══════════════ -->
-  <nav class="bottom-nav" id="bottom-nav">
-    <button class="bottom-nav-item nav-active" data-page="page-dashboard" id="nav-home">
-      <i class="fas fa-home"></i>
-      <span>الرئيسية</span>
-    </button>
-    <button class="bottom-nav-item" data-page="page-students" id="nav-students">
-      <i class="fas fa-users"></i>
-      <span>الطلاب</span>
-    </button>
-    <button class="bottom-nav-item nav-fab" id="nav-save-attendance" onclick="saveAllAttendance()">
-      <i class="fas fa-check-double"></i>
-    </button>
-    <button class="bottom-nav-item" data-page="page-reports" id="nav-reports">
-      <i class="fas fa-chart-bar"></i>
-      <span>التقارير</span>
-    </button>
-    <button class="bottom-nav-item" data-page="page-settings" id="nav-settings">
-      <i class="fas fa-cogs"></i>
-      <span>أدوات</span>
-    </button>
-  </nav>
+  <!-- Import File (Hidden) -->
+  <input type="file" id="import-file" accept=".json" style="display:none;">
 
-  <!-- FAB: زر تسجيل الحضور العائم -->
-  <button class="fab-save" id="fab-save" title="تسجيل الحضور">
-    <i class="fas fa-check-double"></i>
-  </button>
-
-  <!-- ملف الاستيراد المخفي -->
-  <input type="file" id="import-file" accept=".json">
-
-  <!-- ═══════════════ JavaScript Files ═══════════════ -->
+  <!-- ═══════════════════════════════════════════════
+       JavaScript Files — Load Order Matters
+       ═══════════════════════════════════════════════ -->
   <script src="js/constants.js"></script>
   <script src="js/db.js"></script>
   <script src="js/ui.js"></script>
@@ -761,6 +961,7 @@
   <script src="js/backbutton.js"></script>
   <script src="js/navigation.js"></script>
   <script src="js/cards.js"></script>
+  <script src="js/reports-page.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>
